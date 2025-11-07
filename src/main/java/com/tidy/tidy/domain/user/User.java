@@ -14,6 +14,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @Entity
+@Table(name = "users")  // ✅ 예약어 피하는 용도
 public class User extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,16 +32,20 @@ public class User extends BaseTimeEntity {
     @Column(nullable = false)
     private Provider provider; // 계정 종류 구분용, ex. 구글, 네이버, 서비스내
 
+    @Column(nullable = false, unique = true)
+    private String providerId;
+
     // 속한 워크스페이스
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserWorkspace> userWorkspaces = new ArrayList<>();
 
     @Builder
-    public User(String name, String email, String profileImage, Provider provider) {
+    public User(String name, String email, String profileImage, Provider provider, String providerId) {
         this.name = name;
         this.email = email;
         this.profileImage = profileImage;
         this.provider = provider;
+        this.providerId = providerId;
     }
 
     // ---- 도메인 메서드 ----

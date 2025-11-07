@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Tidy</title></head>
+<body>
+<h1>Tidy 홈</h1>
+
+<div th:if="${name != null}">
+    <p>로그인됨 ✅</p>
+    <p>이름: <span th:text="${name}"></span></p>
+    <p>이메일: <span th:text="${email}"></span></p>
+    <img th:if="${picture != null}" th:src="${picture}" alt="profile" width="64"/>
+    <p><a href="/logout">로그아웃</a></p>
+</div>
+
+<div th:if="${name == null}">
+    <p>로그인 안 됨</p>
+    <a href="/oauth2/authorization/google">구글로 로그인</a>
+</div>
+
+</body>
+</html>
