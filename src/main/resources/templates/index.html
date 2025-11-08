@@ -9,7 +9,7 @@
     <p>이름: <span th:text="${name}"></span></p>
     <p>이메일: <span th:text="${email}"></span></p>
     <img th:if="${picture != null}" th:src="${picture}" alt="profile" width="64"/>
-    <p><a href="/logout">로그아웃</a></p>
+    <p><a href="/auth/logout">로그아웃</a></p>
 </div>
 
 <div th:if="${name == null}">

@@ -35,10 +35,11 @@ public class SecurityConfig {
                 )
 
                 .logout(logout -> logout
-                        .logoutUrl("/logout")
-                        .logoutSuccessUrl("/")
-                        .invalidateHttpSession(true)
-                        .deleteCookies("JSESSIONID")
+                        .logoutUrl("/auth/logout")        // 이 URL로 POST 요청이 들어오면 로그아웃 처리
+                        .logoutSuccessUrl("/")            // 로그아웃 후 이동할 페이지
+                        .deleteCookies("JSESSIONID")      // 세션 쿠키 삭제
+                        .invalidateHttpSession(true)      // 세션 무효화
+                        .clearAuthentication(true)        // SecurityContext 정리
                 )
 
                 .headers(headers -> headers.frameOptions(Customizer.withDefaults()).disable()); // H2 콘솔 쓸 경우 등

@@ -1,5 +1,6 @@
 package com.tidy.tidy.domain.workspace;
 
+import com.tidy.tidy.domain.BaseTimeEntity;
 import com.tidy.tidy.domain.membership.UserWorkspace;
 import jakarta.persistence.*;
 import lombok.Builder;
@@ -12,7 +13,7 @@ import java.util.List;
 @Entity
 @Getter
 @NoArgsConstructor
-public class Workspace {
+public class Workspace extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

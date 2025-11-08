@@ -56,11 +56,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                                 .build()
                 ));
 
-        // 권한은 일단 ROLE_USER 하나 부여 (Security 6: SimpleGrantedAuthority)
-        return new DefaultOAuth2User(
-                Set.of(() -> "ROLE_USER"),
-                attributes,
-                "sub" // nameAttributeKey: 고유키
-        );
+        // 우리의 User 엔티티 + attributes 를 담은 CustomOAuth2User 반환
+        return new CustomOAuth2User(user, attributes);
     }
 }
