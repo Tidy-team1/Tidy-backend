@@ -31,7 +31,7 @@ public class SecurityConfig {
                 .oauth2Login(oauth -> oauth
                         .loginPage("/oauth2/authorization/google") // 선택: 직접 링크 사용
                         .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
-                        .defaultSuccessUrl("/", true) // 로그인 성공 시 홈으로
+                        .defaultSuccessUrl("http://localhost:3000/", true) // 로그인 성공 시 홈으로
                 )
 
                 .logout(logout -> logout
