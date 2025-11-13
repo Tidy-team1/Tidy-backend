@@ -16,6 +16,8 @@ import java.util.Map;
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
+
 public class AuthController {
     // 로그인 진입점. 로그인 페이지로 리다이렉트
     @GetMapping("/login/{provider}")
