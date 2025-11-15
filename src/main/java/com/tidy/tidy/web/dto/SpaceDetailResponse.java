@@ -19,20 +19,29 @@ public class SpaceDetailResponse {
     private String type;
     private LocalDateTime createdAt;
 
-    private List<TeamMemberDto> members; // Personal이면 null
+    private List<TeamMemberDto> members;              // TeamSpace 전용
+    private List<PresentationResponse> presentations; // ⭐ 추가됨
 
-    public static SpaceDetailResponse fromPersonal(PersonalSpace ps) {
+    public static SpaceDetailResponse fromPersonal(
+            PersonalSpace ps,
+            List<PresentationResponse> presentations
+    ) {
         return new SpaceDetailResponse(
                 ps.getId(),
                 ps.getName(),
                 ps.getType().name(),
                 ps.getCreatedAt(),
-                null // personal space는 멤버 없음
+                null,
+                presentations                               // ⭐ personal도 프레젠테이션 있음
         );
     }
 
-    public static SpaceDetailResponse fromTeam(TeamSpace ts, List<TeamMember> teamMembers) {
-        List<TeamMemberDto> members = teamMembers.stream()
+    public static SpaceDetailResponse fromTeam(
+            TeamSpace ts,
+            List<TeamMember> teamMembers,
+            List<PresentationResponse> presentations
+    ) {
+        List<TeamMemberDto> memberDtos = teamMembers.stream()
                 .map(TeamMemberDto::fromEntity)
                 .toList();
 
@@ -41,16 +50,21 @@ public class SpaceDetailResponse {
                 ts.getName(),
                 ts.getType().name(),
                 ts.getCreatedAt(),
-                members
+                memberDtos,
+                presentations                               // ⭐ team도 프레젠테이션 포함
         );
     }
 
-    public static SpaceDetailResponse from(Space space, List<TeamMember> teamMembers) {
+    public static SpaceDetailResponse from(
+            Space space,
+            List<TeamMember> teamMembers,
+            List<PresentationResponse> presentations
+    ) {
         if (space instanceof PersonalSpace ps) {
-            return fromPersonal(ps);
+            return fromPersonal(ps, presentations);
         }
         if (space instanceof TeamSpace ts) {
-            return fromTeam(ts, teamMembers);
+            return fromTeam(ts, teamMembers, presentations);
         }
         throw new IllegalArgumentException("Unknown space type: " + space.getClass());
     }

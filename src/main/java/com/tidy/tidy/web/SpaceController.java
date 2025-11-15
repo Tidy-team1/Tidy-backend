@@ -1,11 +1,13 @@
 package com.tidy.tidy.web;
 
 import com.tidy.tidy.config.oauth.CustomOAuth2User;
+import com.tidy.tidy.domain.presentation.PresentationRepository;
 import com.tidy.tidy.domain.space.Space;
 import com.tidy.tidy.domain.space.personal.PersonalSpace;
 import com.tidy.tidy.domain.space.personal.PersonalSpaceRepository;
 import com.tidy.tidy.domain.space.team.*;
 import com.tidy.tidy.domain.user.User;
+import com.tidy.tidy.web.dto.PresentationResponse;
 import com.tidy.tidy.web.dto.SpaceDetailResponse;
 import com.tidy.tidy.web.dto.SpaceResponse;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,7 @@ public class SpaceController {
     private final PersonalSpaceRepository personalSpaceRepository;
     private final TeamSpaceRepository teamSpaceRepository;
     private final TeamMemberRepository teamMemberRepository;
+    private final PresentationRepository presentationRepository;
 
     // ---------------------------------------------
     // 1) TeamSpace 생성
@@ -50,7 +53,6 @@ public class SpaceController {
                 "type", teamSpace.getType().name()
         ));
     }
-
     // ---------------------------------------------
     // 2) 내 모든 Space 목록 조회 (PersonalSpace + TeamSpace)
     // ---------------------------------------------
@@ -72,16 +74,59 @@ public class SpaceController {
                 .map(m -> SpaceResponse.fromTeam(m.getTeamSpace()))
                 .toList();
 
-        // 나의 personal + teamSpace 통합 리스트
-        List<SpaceResponse> result = List.of(personalResponse);
-        result = new java.util.ArrayList<>(result);
+        // personal + team 목록 통합
+        List<SpaceResponse> result = new java.util.ArrayList<>();
+        result.add(personalResponse);
         result.addAll(teams);
 
         return ResponseEntity.ok(result);
     }
 
+
     // ---------------------------------------------
-    // 3) 특정 Space 상세 조회
+    // 3) 내 PersonalSpace 상세 조회
+    // ---------------------------------------------
+    @GetMapping("/personal")
+    public ResponseEntity<?> getMyPersonalSpace(
+            @AuthenticationPrincipal CustomOAuth2User principal
+    ) {
+        User user = principal.getUser();
+
+        PersonalSpace ps = personalSpaceRepository.findByOwner(user)
+                .orElseThrow(() -> new IllegalStateException("개인 스페이스가 없습니다."));
+
+        // presentation 조회
+        List<PresentationResponse> presentations =
+                presentationRepository.findBySpaceId(ps.getId()).stream()
+                        .map(PresentationResponse::new)
+                        .toList();
+
+        return ResponseEntity.ok(
+                SpaceDetailResponse.from(ps, null, presentations)
+        );
+    }
+
+
+    // ---------------------------------------------
+    // 4) 내 TeamSpace 목록 조회
+    // ---------------------------------------------
+    @GetMapping("/team")
+    public ResponseEntity<?> getMyTeamSpaces(
+            @AuthenticationPrincipal CustomOAuth2User principal
+    ) {
+        User user = principal.getUser();
+
+        List<TeamMember> memberships = teamMemberRepository.findByUser(user);
+
+        List<SpaceResponse> teams = memberships.stream()
+                .map(m -> SpaceResponse.fromTeam(m.getTeamSpace()))
+                .toList();
+
+        return ResponseEntity.ok(teams);
+    }
+
+    // ---------------------------------------------
+    // 5) Space 상세 조회 (ID 가지고 조회)
     // ---------------------------------------------
     @GetMapping("/{spaceId}")
     public ResponseEntity<?> getSpace(
@@ -97,13 +142,25 @@ public class SpaceController {
                     .map(s -> (Space) s)
                     .orElseThrow(() -> new IllegalArgumentException("해당 스페이스가 존재하지 않습니다."));
         }
+
+        // presentation 조회
+        List<PresentationResponse> presentations =
+                presentationRepository.findBySpaceId(spaceId).stream()
+                        .map(PresentationResponse::new)
+                        .toList();
+
+        // TeamSpace
         if (space instanceof TeamSpace ts) {
             List<TeamMember> members = teamMemberRepository.findByTeamSpace(ts);
-            return ResponseEntity.ok(SpaceDetailResponse.from(space, members));
+            return ResponseEntity.ok(
+                    SpaceDetailResponse.from(ts, members, presentations)
+            );
         }
 
         // PersonalSpace
-        return ResponseEntity.ok(SpaceDetailResponse.from(space, null));
-
+        return ResponseEntity.ok(
+                SpaceDetailResponse.from(space, null, presentations)
+        );
     }
+
 }
