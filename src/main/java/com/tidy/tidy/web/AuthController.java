@@ -1,6 +1,9 @@
 package com.tidy.tidy.web;
 
 import com.tidy.tidy.config.oauth.CustomOAuth2User;
+import com.tidy.tidy.domain.space.personal.PersonalSpace;
+import com.tidy.tidy.domain.space.personal.PersonalSpaceRepository;
+import com.tidy.tidy.domain.user.User;
 import com.tidy.tidy.web.dto.UserResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -12,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/auth")
@@ -19,6 +23,8 @@ import java.util.Map;
 @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 
 public class AuthController {
+    private final PersonalSpaceRepository personalSpaceRepository;
+
     // 로그인 진입점. 로그인 페이지로 리다이렉트
     @GetMapping("/login/{provider}")
     public void login(@PathVariable String provider, HttpServletResponse response) throws IOException {
@@ -29,6 +35,12 @@ public class AuthController {
     @GetMapping("/me")
     public ResponseEntity<UserResponse> me(@AuthenticationPrincipal CustomOAuth2User principal) {
         if (principal == null) return ResponseEntity.status(401).build();
-        return ResponseEntity.ok(UserResponse.from(principal.getUser()));
+
+        User user = principal.getUser();
+
+        PersonalSpace ps = personalSpaceRepository.findByOwner(user)
+                .orElse(null);
+
+        return ResponseEntity.ok(UserResponse.from(user, ps));
     }
 }

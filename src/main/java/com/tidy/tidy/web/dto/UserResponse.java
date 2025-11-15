@@ -1,5 +1,7 @@
 package com.tidy.tidy.web.dto;
 
+import com.tidy.tidy.domain.space.personal.PersonalSpace;
+import com.tidy.tidy.domain.space.personal.PersonalSpaceRepository;
 import com.tidy.tidy.domain.user.User;
 import lombok.Builder;
 
@@ -13,9 +15,10 @@ public record UserResponse(
         String profileImage,
         String provider,
         LocalDateTime createdAt,
-        LocalDateTime updatedAt
+        LocalDateTime updatedAt,
+        Long personalSpaceId
 ) {
-    public static UserResponse from(User user) {
+    public static UserResponse from(User user, PersonalSpace ps) {
         return UserResponse.builder()
                 .id(user.getId())
                 .name(user.getName())
@@ -24,6 +27,7 @@ public record UserResponse(
                 .provider(user.getProvider().name())
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())
+                .personalSpaceId(ps != null ? ps.getId() : null)
                 .build();
     }
 }

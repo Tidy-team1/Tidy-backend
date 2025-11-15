@@ -1,15 +1,10 @@
 package com.tidy.tidy.domain.user;
 
 import com.tidy.tidy.domain.BaseTimeEntity;
-import com.tidy.tidy.domain.membership.UserWorkspace;
-import com.tidy.tidy.domain.workspace.Workspace;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 @NoArgsConstructor
@@ -35,10 +30,6 @@ public class User extends BaseTimeEntity {
     @Column(nullable = false, unique = true)
     private String providerId;
 
-    // 속한 워크스페이스
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<UserWorkspace> userWorkspaces = new ArrayList<>();
-
     @Builder
     public User(String name, String email, String profileImage, Provider provider, String providerId) {
         this.name = name;
@@ -46,6 +37,15 @@ public class User extends BaseTimeEntity {
         this.profileImage = profileImage;
         this.provider = provider;
         this.providerId = providerId;
+    }
+
+    public static User create(String email, String name, Provider provider, String profileImage) {
+        return User.builder()
+                .email(email)
+                .name(name)
+                .provider(provider)
+                .profileImage(profileImage)
+                .build();
     }
 
     // ---- 도메인 메서드 ----
@@ -59,4 +59,6 @@ public class User extends BaseTimeEntity {
     public void changeProfileImage(String imageUrl) {
         this.profileImage = imageUrl;
     }
+
+
 }

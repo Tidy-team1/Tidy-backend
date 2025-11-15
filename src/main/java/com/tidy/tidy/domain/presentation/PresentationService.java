@@ -1,7 +1,11 @@
 package com.tidy.tidy.domain.presentation;
 
-import com.tidy.tidy.domain.workspace.Workspace;
-import com.tidy.tidy.domain.workspace.WorkspaceRepository;
+import com.tidy.tidy.domain.space.Space;
+import com.tidy.tidy.domain.space.personal.PersonalSpace;
+import com.tidy.tidy.domain.space.personal.PersonalSpaceRepository;
+import com.tidy.tidy.domain.space.team.TeamSpace;
+import com.tidy.tidy.domain.space.team.TeamSpaceRepository;
+import com.tidy.tidy.domain.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,23 +23,23 @@ import java.util.UUID;
 public class PresentationService {
 
     private final PresentationRepository presentationRepository;
-    private final WorkspaceRepository workspaceRepository;
+    private final PersonalSpaceRepository personalSpaceRepository;
+    private final TeamSpaceRepository teamSpaceRepository;
 
-    // 상대경로 (서버 실행 위치 기준)
     private static final String UPLOAD_DIR = "uploads";
 
     @Transactional
-    public Presentation savePresentation(Long workspaceId, MultipartFile file) {
-        // 1️⃣ 워크스페이스 검증
-        Workspace workspace = workspaceRepository.findById(workspaceId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 워크스페이스가 존재하지 않습니다."));
+    public Presentation savePresentation(Long spaceId, MultipartFile file, User uploader) {
 
-        // 2️⃣ 업로드 경로 생성
-        String workspaceDir = UPLOAD_DIR + File.separator + workspaceId;
-        File dir = new File(workspaceDir);
+        // 1️⃣ spaceId에 해당하는 Space 찾기
+        Space space = findSpaceById(spaceId);
+
+        // 2️⃣ 업로드 디렉토리 생성
+        String spaceDir = UPLOAD_DIR + File.separator + spaceId;
+        File dir = new File(spaceDir);
         if (!dir.exists()) dir.mkdirs();
 
-        // 3️⃣ 원본 파일명 및 확장자 추출
+        // 3️⃣ 파일명 검증 및 확장자 추출
         String originalFilename = file.getOriginalFilename();
         if (originalFilename == null || originalFilename.isBlank()) {
             throw new IllegalArgumentException("파일 이름이 비어 있습니다.");
@@ -44,38 +48,53 @@ public class PresentationService {
         String extension = "";
         int dotIndex = originalFilename.lastIndexOf(".");
         if (dotIndex > 0) {
-            extension = originalFilename.substring(dotIndex); // .pptx 포함
+            extension = originalFilename.substring(dotIndex);
         }
 
         // 4️⃣ UUID 기반 저장 파일명 생성
-        String uuid = UUID.randomUUID().toString();
-        String storedFilename = uuid + extension; // 예: 6a7d9e4a-...-a98a.pptx
+        String storedName = UUID.randomUUID().toString() + extension;
 
         // 5️⃣ 실제 저장 경로
-        String filePath = workspaceDir + File.separator + storedFilename;
+        String filePath = spaceDir + File.separator + storedName;
 
         // 6️⃣ 파일 저장
         try {
             Path path = Paths.get(filePath);
             Files.write(path, file.getBytes());
-            System.out.println("✅ 파일 저장 성공: " + path.toAbsolutePath());
         } catch (IOException e) {
-            e.printStackTrace();
             throw new RuntimeException("파일 저장 실패: " + e.getMessage());
         }
 
-        // 7️⃣ Presentation 엔티티 생성
+        // 7️⃣ Presentation 생성
         Presentation presentation = Presentation.builder()
-                .title(originalFilename)            // 사용자가 본래 업로드한 이름
-                .filePath(filePath)                 // 서버 저장 경로 (UUID 파일명)
+                .title(originalFilename)
+                .filePath(filePath)
+                .thumbnailUrl(null) // 추후 썸네일 지원 시 채움
+                .slideCount(0)      // 추후 분석 단계에서 셋팅
                 .analysisStatus(AnalysisStatus.PENDING)
-                .workspace(workspace)
+                .space(space)        // 핵심: Space 단방향 연결
+                .uploader(uploader)  // uploader(User) 단방향 매핑이면 id 필요
                 .build();
 
-        // 8️⃣ 양방향 연관관계 동기화
-        workspace.addPresentation(presentation);
-
-        // 9️⃣ 저장 및 반환
+        // 8️⃣ 저장 후 반환
         return presentationRepository.save(presentation);
+    }
+
+
+    /**
+     * Space 추상 타입을 통합 조회하는 로직
+     * (SpaceRepository 없이 personal → team 순서로 조회)
+     */
+    private Space findSpaceById(Long id) {
+
+        // PersonalSpace 먼저 조회
+        PersonalSpace ps = personalSpaceRepository.findById(id).orElse(null);
+        if (ps != null) return ps;
+
+        // TeamSpace 조회
+        TeamSpace ts = teamSpaceRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("해당 스페이스가 존재하지 않습니다. id=" + id));
+
+        return ts;
     }
 }
