@@ -1,8 +1,8 @@
 package com.tidy.tidy.domain.presentation;
 
 import com.tidy.tidy.domain.BaseTimeEntity;
+import com.tidy.tidy.domain.space.Space;
 import com.tidy.tidy.domain.user.User;
-import com.tidy.tidy.domain.workspace.Workspace;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -34,13 +34,14 @@ public class Presentation extends BaseTimeEntity {
 
     private String analysisPath;  // Python 결과 JSON 경로 (선택적)
 
+    // 핵심 포인트: Space 하나만 연결
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "uploader_id")
-    private User uploader;
+    @JoinColumn(name = "space_id", nullable = false)
+    private Space space;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "workspace_id")
-    private Workspace workspace;
+    @JoinColumn(name = "uploader_id", nullable = false)
+    private User uploader;
 
     // ✅ 빌더는 생성자 단에만 지정: id는 제외됨
     @Builder
@@ -50,14 +51,31 @@ public class Presentation extends BaseTimeEntity {
                         Integer slideCount,
                         AnalysisStatus analysisStatus,
                         User uploader,
-                        Workspace workspace) {
+                        Space space) {
         this.title = title;
         this.filePath = filePath;
         this.thumbnailUrl = thumbnailUrl;
         this.slideCount = slideCount;
         this.analysisStatus = analysisStatus != null ? analysisStatus : AnalysisStatus.PENDING;
         this.uploader = uploader;
-        this.workspace = workspace;
+        this.space = space;
+    }
+
+    public static Presentation create(String title,
+                                  String filePath,
+                                  int slideCount,
+                                  String thumbnailUrl,
+                                  Space space,
+                                  User uploader) {
+        return Presentation.builder()
+                .title(title)
+                .filePath(filePath)
+                .slideCount(slideCount)
+                .thumbnailUrl(thumbnailUrl)
+                .analysisStatus(AnalysisStatus.PENDING)
+                .space(space)
+                .uploader(uploader)
+                .build();
     }
 
     //== 상태 변경 메서드 ==//
@@ -71,10 +89,4 @@ public class Presentation extends BaseTimeEntity {
     public void markAnalysisFailed() {
         this.analysisStatus = AnalysisStatus.FAILED;
     }
-
-    // ✅ 맘대로 호출하지 말것. 편의 메서드용임.
-    public void setWorkspace(Workspace workspace) {
-        this.workspace = workspace;
-    }
-
 }

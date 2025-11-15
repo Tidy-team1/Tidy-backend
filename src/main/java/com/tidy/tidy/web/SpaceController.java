@@ -1,0 +1,109 @@
+package com.tidy.tidy.web;
+
+import com.tidy.tidy.config.oauth.CustomOAuth2User;
+import com.tidy.tidy.domain.space.Space;
+import com.tidy.tidy.domain.space.personal.PersonalSpace;
+import com.tidy.tidy.domain.space.personal.PersonalSpaceRepository;
+import com.tidy.tidy.domain.space.team.*;
+import com.tidy.tidy.domain.user.User;
+import com.tidy.tidy.web.dto.SpaceDetailResponse;
+import com.tidy.tidy.web.dto.SpaceResponse;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/spaces")
+public class SpaceController {
+
+    private final PersonalSpaceRepository personalSpaceRepository;
+    private final TeamSpaceRepository teamSpaceRepository;
+    private final TeamMemberRepository teamMemberRepository;
+
+    // ---------------------------------------------
+    // 1) TeamSpace 생성
+    // ---------------------------------------------
+    @PostMapping("/team")
+    public ResponseEntity<?> createTeamSpace(
+            @AuthenticationPrincipal CustomOAuth2User principal,
+            @RequestBody Map<String, String> request
+    ) {
+        String name = request.get("name");
+        User user = principal.getUser();
+
+        // TeamSpace 생성
+        TeamSpace teamSpace = TeamSpace.create(name);
+        teamSpaceRepository.save(teamSpace);
+
+        // Owner TeamMember 생성
+        TeamMember ownerMember = TeamMember.create(user, teamSpace, TeamRole.OWNER);
+        teamMemberRepository.save(ownerMember);
+
+        return ResponseEntity.ok(Map.of(
+                "id", teamSpace.getId(),
+                "name", teamSpace.getName(),
+                "type", teamSpace.getType().name()
+        ));
+    }
+
+    // ---------------------------------------------
+    // 2) 내 모든 Space 목록 조회 (PersonalSpace + TeamSpace)
+    // ---------------------------------------------
+    @GetMapping
+    public ResponseEntity<?> getMySpaces(
+            @AuthenticationPrincipal CustomOAuth2User principal
+    ) {
+        User user = principal.getUser();
+
+        // 개인 스페이스
+        PersonalSpace ps = personalSpaceRepository.findByOwner(user)
+                .orElseThrow(() -> new IllegalStateException("개인 공간이 존재하지 않습니다."));
+
+        SpaceResponse personalResponse = SpaceResponse.fromPersonal(ps);
+
+        // 팀 스페이스들
+        List<TeamMember> memberships = teamMemberRepository.findByUser(user);
+        List<SpaceResponse> teams = memberships.stream()
+                .map(m -> SpaceResponse.fromTeam(m.getTeamSpace()))
+                .toList();
+
+        // 나의 personal + teamSpace 통합 리스트
+        List<SpaceResponse> result = List.of(personalResponse);
+        result = new java.util.ArrayList<>(result);
+        result.addAll(teams);
+
+        return ResponseEntity.ok(result);
+    }
+
+    // ---------------------------------------------
+    // 3) 특정 Space 상세 조회
+    // ---------------------------------------------
+    @GetMapping("/{spaceId}")
+    public ResponseEntity<?> getSpace(
+            @PathVariable Long spaceId
+    ) {
+        // PersonalSpace 먼저 조회
+        Space space = personalSpaceRepository.findById(spaceId)
+                .map(s -> (Space) s)
+                .orElse(null);
+
+        if (space == null) {
+            space = teamSpaceRepository.findById(spaceId)
+                    .map(s -> (Space) s)
+                    .orElseThrow(() -> new IllegalArgumentException("해당 스페이스가 존재하지 않습니다."));
+        }
+        if (space instanceof TeamSpace ts) {
+            List<TeamMember> members = teamMemberRepository.findByTeamSpace(ts);
+            return ResponseEntity.ok(SpaceDetailResponse.from(space, members));
+        }
+
+        // PersonalSpace
+        return ResponseEntity.ok(SpaceDetailResponse.from(space, null));
+
+    }
+}
