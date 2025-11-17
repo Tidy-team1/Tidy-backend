@@ -3,6 +3,8 @@ package com.tidy.tidy.web.dto;
 import com.tidy.tidy.domain.presentation.Presentation;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
+
 @Getter
 public class PresentationResponse {
     private Long id;

@@ -3,35 +3,30 @@ package com.tidy.tidy.web;
 import com.tidy.tidy.config.oauth.CustomOAuth2User;
 import com.tidy.tidy.domain.presentation.Presentation;
 import com.tidy.tidy.domain.presentation.PresentationService;
+import com.tidy.tidy.domain.slide.SlideService;
 import com.tidy.tidy.domain.user.User;
 import com.tidy.tidy.web.dto.PresentationResponse;
+import com.tidy.tidy.web.dto.SlideResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/spaces/{spaceId}/presentations")
+@RequestMapping("/presentations")
 public class PresentationController {
 
-    private final PresentationService presentationService;
+    private final SlideService slideService;
 
-    @PostMapping
-    public ResponseEntity<PresentationResponse> uploadPresentation(
-            @PathVariable Long spaceId,
-            @RequestParam("file") MultipartFile file,
-            Authentication authentication
-    ) {
-        // 1) 인증 사용자 꺼내기
-        CustomOAuth2User principal = (CustomOAuth2User) authentication.getPrincipal();
-        User uploader = principal.getUser();
+    @GetMapping("/{presentationId}/slides")
+    public ResponseEntity<List<SlideResponse>> getSlides(
+            @PathVariable Long presentationId) {
 
-        // 2) Presentation 저장
-        Presentation presentation = presentationService.savePresentation(spaceId, file, uploader);
-
-        // 3) 응답
-        return ResponseEntity.ok(new PresentationResponse(presentation));
+        return ResponseEntity.ok(slideService.getSlides(presentationId));
     }
+
 }
