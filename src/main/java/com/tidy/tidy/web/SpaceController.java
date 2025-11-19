@@ -1,7 +1,10 @@
 package com.tidy.tidy.web;
 
 import com.tidy.tidy.config.oauth.CustomOAuth2User;
+import com.tidy.tidy.domain.presentation.Presentation;
 import com.tidy.tidy.domain.presentation.PresentationRepository;
+import com.tidy.tidy.domain.presentation.PresentationService;
+import com.tidy.tidy.domain.slide.SlideService;
 import com.tidy.tidy.domain.space.Space;
 import com.tidy.tidy.domain.space.personal.PersonalSpace;
 import com.tidy.tidy.domain.space.personal.PersonalSpaceRepository;
@@ -12,8 +15,10 @@ import com.tidy.tidy.web.dto.SpaceDetailResponse;
 import com.tidy.tidy.web.dto.SpaceResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -27,6 +32,8 @@ public class SpaceController {
     private final TeamSpaceRepository teamSpaceRepository;
     private final TeamMemberRepository teamMemberRepository;
     private final PresentationRepository presentationRepository;
+    private final PresentationService presentationService;
+    private final SlideService slideService;
 
     // ---------------------------------------------
     // 1) TeamSpace 생성
@@ -161,6 +168,51 @@ public class SpaceController {
         return ResponseEntity.ok(
                 SpaceDetailResponse.from(space, null, presentations)
         );
+    }
+
+    // ---------------------------------------------
+    // 6) 특정 Space 내 Presentation 목록 조회
+    // ---------------------------------------------
+    @GetMapping("/{spaceId}/presentations")
+    public ResponseEntity<?> getPresentationsInSpace(
+            @PathVariable Long spaceId
+    ) {
+        // Space 존재 여부 확인
+        boolean exists =
+                personalSpaceRepository.existsById(spaceId)
+                        || teamSpaceRepository.existsById(spaceId);
+
+        if (!exists) {
+            throw new IllegalArgumentException("해당 스페이스가 존재하지 않습니다.");
+        }
+
+        // presentations 조회
+        List<PresentationResponse> presentations = presentationRepository
+                .findBySpaceId(spaceId)
+                .stream()
+                .map(PresentationResponse::new)
+                .toList();
+
+        return ResponseEntity.ok(presentations);
+    }
+
+    @PostMapping("/{spaceId}/presentations")
+    public ResponseEntity<PresentationResponse> uploadPresentation(
+            @PathVariable Long spaceId,
+            @RequestParam("file") MultipartFile file,
+            Authentication authentication
+    ) {
+        CustomOAuth2User principal = (CustomOAuth2User) authentication.getPrincipal();
+        User uploader = principal.getUser();
+
+        // 1) Presentation 저장 (DB + original.pptx 저장)
+        Presentation presentation = presentationService.savePresentation(spaceId, file, uploader);
+
+        // 2) 썸네일 생성 (이 시점엔 savePresentation 트랜잭션 끝난 상태)
+        slideService.generateThumbnails(presentation.getId());
+
+        // 3) 응답
+        return ResponseEntity.ok(new PresentationResponse(presentation));
     }
 
 }
