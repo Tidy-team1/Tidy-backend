@@ -1,9 +1,11 @@
 package com.tidy.tidy.web.dto;
 
 import com.tidy.tidy.domain.slide.Slide;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
+@AllArgsConstructor
 public class SlideResponse {
 
     private Long id;

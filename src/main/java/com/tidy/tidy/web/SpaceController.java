@@ -4,6 +4,7 @@ import com.tidy.tidy.config.oauth.CustomOAuth2User;
 import com.tidy.tidy.domain.presentation.Presentation;
 import com.tidy.tidy.domain.presentation.PresentationRepository;
 import com.tidy.tidy.domain.presentation.PresentationService;
+import com.tidy.tidy.domain.slide.SlideService;
 import com.tidy.tidy.domain.space.Space;
 import com.tidy.tidy.domain.space.personal.PersonalSpace;
 import com.tidy.tidy.domain.space.personal.PersonalSpaceRepository;
@@ -32,6 +33,7 @@ public class SpaceController {
     private final TeamMemberRepository teamMemberRepository;
     private final PresentationRepository presentationRepository;
     private final PresentationService presentationService;
+    private final SlideService slideService;
 
     // ---------------------------------------------
     // 1) TeamSpace 생성
@@ -200,14 +202,17 @@ public class SpaceController {
             @RequestParam("file") MultipartFile file,
             Authentication authentication
     ) {
-        // 1) 인증 사용자 꺼내기
         CustomOAuth2User principal = (CustomOAuth2User) authentication.getPrincipal();
         User uploader = principal.getUser();
 
-        // 2) Presentation 저장
+        // 1) Presentation 저장 (DB + original.pptx 저장)
         Presentation presentation = presentationService.savePresentation(spaceId, file, uploader);
+
+        // 2) 썸네일 생성 (이 시점엔 savePresentation 트랜잭션 끝난 상태)
+        slideService.generateThumbnails(presentation.getId());
 
         // 3) 응답
         return ResponseEntity.ok(new PresentationResponse(presentation));
     }
+
 }

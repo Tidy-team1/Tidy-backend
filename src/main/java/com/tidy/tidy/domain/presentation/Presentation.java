@@ -89,4 +89,16 @@ public class Presentation extends BaseTimeEntity {
     public void markAnalysisFailed() {
         this.analysisStatus = AnalysisStatus.FAILED;
     }
+
+    public void updateSlideCount(int count) {
+        this.slideCount = count;
+    }
+
+    public void updateThumbnailUrl(String url) {
+        this.thumbnailUrl = url;
+    }
+
+    public void updateFilePath(String savedPath) {
+        this.filePath = savedPath;
+    }
 }
