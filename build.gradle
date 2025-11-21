@@ -8,12 +8,6 @@ group = 'com.tidy'
 version = '0.0.1-SNAPSHOT'
 description = 'Tidy service project'
 
-java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(17)
-	}
-}
-
 configurations {
 	compileOnly {
 		extendsFrom annotationProcessor
