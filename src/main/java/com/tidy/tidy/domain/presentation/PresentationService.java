@@ -5,16 +5,14 @@ import com.tidy.tidy.domain.space.personal.PersonalSpace;
 import com.tidy.tidy.domain.space.personal.PersonalSpaceRepository;
 import com.tidy.tidy.domain.space.team.TeamSpaceRepository;
 import com.tidy.tidy.domain.user.User;
+import com.tidy.tidy.infrastructure.storage.KeyBuilder;
+import com.tidy.tidy.infrastructure.storage.StorageService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 @Service
 @RequiredArgsConstructor
@@ -24,11 +22,12 @@ public class PresentationService {
     private final PersonalSpaceRepository personalSpaceRepository;
     private final TeamSpaceRepository teamSpaceRepository;
 
-    @Value("${bucket.path}")
-    private String bucketPath; // 예: /output
+    // ⭐ 새로 주입되는 두 개
+    private final StorageService storageService;
+    private final KeyBuilder keyBuilder;
 
     @Transactional
-    public Presentation savePresentation(Long spaceId, MultipartFile file, User uploader) {
+    public Presentation savePresentation(Long spaceId, MultipartFile file, User uploader) throws IOException {
 
         Space space = findSpaceById(spaceId);
 
@@ -51,28 +50,15 @@ public class PresentationService {
         pres = presentationRepository.save(pres); // 여기서 id 생성
         Long presentationId = pres.getId();
 
-        // 2) 파일 경로 생성 (호스트 기준)
-        //    /output/spaces/{spaceId}/presentations/{presentationId}/original.pptx
-        String baseDir = bucketPath + "/spaces/" + spaceId + "/presentations/" + presentationId;
-        File dir = new File(baseDir);
-        if (!dir.exists() && !dir.mkdirs()) {
-            throw new RuntimeException("디렉토리 생성 실패: " + baseDir);
-        }
+        // ⭐ 2) S3 key 생성
+        String key = keyBuilder.presentationOriginal(spaceId, presentationId);
 
-        String originalPath = baseDir + "/original.pptx";
+        // ⭐ 3) StorageService(S3)로 파일 업로드
+        String storedKey = storageService.upload(key, file.getBytes());
 
-        // 3) 파일 저장
-        try {
-            Files.write(Path.of(originalPath), file.getBytes());
-        } catch (IOException e) {
-            throw new RuntimeException("파일 저장 실패: " + originalPath);
-        }
+        // ⭐ 4) DB 업데이트
+        pres.updateFilePath(storedKey);
 
-        // 4) filePath 실제 값으로 업데이트
-        pres.updateFilePath(originalPath);
-        // 같은 @Transactional 안이라 flush 시점에 DB 반영됨
-
-        // ❌ 여기서 썸네일 만들지 않는다
         return pres;
     }
 

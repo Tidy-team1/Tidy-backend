@@ -7,13 +7,9 @@ import com.tidy.tidy.infrastructure.python.dto.PptThumbnailRequest;
 import com.tidy.tidy.infrastructure.python.dto.PptThumbnailResponse;
 import com.tidy.tidy.web.dto.SlideResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.File;
-import java.nio.file.Path;
 import java.util.List;
 
 @Service
@@ -24,11 +20,6 @@ public class SlideService {
     private final SlideRepository slideRepository;
     private final PythonApiClient pythonApiClient;
 
-    @Value("${bucket.path}")
-    private String bucketPath; // 호스트 기준: /output
-
-    private static final String CONTAINER_BUCKET_PATH = "/app/output"; // 컨테이너 기준
-
     @Transactional
     public void generateThumbnails(Long presentationId) {
 
@@ -36,53 +27,33 @@ public class SlideService {
         Presentation p = presentationRepository.findById(presentationId)
                 .orElseThrow(() -> new IllegalArgumentException("Presentation not found"));
 
-        String hostFilePath = p.getFilePath();
-        if (hostFilePath == null || hostFilePath.isBlank()) {
-            throw new IllegalStateException("Presentation filePath is empty");
-        }
+        Long spaceId = p.getSpace().getId();
 
-        // 2) host → container 경로변환
-        String containerFilePath = hostFilePath.replace(bucketPath, CONTAINER_BUCKET_PATH);
-
-        // 3) thumbnails 디렉토리 (컨테이너 기준)
-        String containerBaseDir = containerFilePath.substring(0, containerFilePath.lastIndexOf("/"));
-        String containerThumbnailDir = containerBaseDir + "/thumbnails";
-
-        // 4) Python 요청
-        PptThumbnailRequest req = new PptThumbnailRequest(
-                containerFilePath,
-                containerThumbnailDir
-        );
+        // 2) Python에 보내는 요청: 더 이상 경로 X, ID만 보냄
+        PptThumbnailRequest req = new PptThumbnailRequest(spaceId, presentationId);
 
         PptThumbnailResponse response =
                 pythonApiClient.requestThumbnailGeneration(presentationId, req);
 
-        if (response.getThumbnailPaths() == null || response.getThumbnailPaths().isEmpty()) {
+        List<String> keys = response.getThumbnailKeys();
+        if (keys == null || keys.isEmpty()) {
             throw new IllegalStateException("Python returned no thumbnails");
         }
 
-        // 5) 기존 슬라이드 삭제
+        // 3) 기존 슬라이드 삭제
         slideRepository.deleteByPresentation(p);
 
-        // 6) 새 슬라이드 생성
+        // 4) 새 슬라이드 저장
         int index = 1;
-        for (String containerThumbPath : response.getThumbnailPaths()) {
-
-            // ⭐ 핵심: 컨테이너 경로 → 로컬 경로 변환
-            String hostThumbPath = containerThumbPath.replace(CONTAINER_BUCKET_PATH, bucketPath);
-
-            Slide sl = new Slide(index, hostThumbPath, p);
+        for (String key : keys) {
+            Slide sl = new Slide(index, key, p); // thumbnailUrl ← 이제 S3 key
             slideRepository.save(sl);
-
             index++;
         }
 
-        // ⭐ 대표 썸네일도 로컬 기준으로 저장
-        String firstHostThumb = response.getThumbnailPaths().get(0)
-                .replace(CONTAINER_BUCKET_PATH, bucketPath);
-
-        p.updateSlideCount(index - 1);
-        p.updateThumbnailUrl(firstHostThumb);
+        // 5) 대표 썸네일 저장
+        p.updateSlideCount(keys.size());
+        p.updateThumbnailUrl(keys.get(0)); // 첫 번째 썸네일 key
     }
 
     @Transactional(readOnly = true)
@@ -90,15 +61,12 @@ public class SlideService {
         Presentation p = presentationRepository.findById(presentationId)
                 .orElseThrow(() -> new IllegalArgumentException("Presentation not found"));
 
-        List<Slide> slides = slideRepository
-                .findAllByPresentationOrderBySlideIndexAsc(p);
-
-        return slides.stream()
+        return slideRepository.findAllByPresentationOrderBySlideIndexAsc(p)
+                .stream()
                 .map(s -> new SlideResponse(
                         s.getId(),
                         s.getSlideIndex(),
-                        s.getThumbnailUrl()
-                ))
-                .toList();
+                        s.getThumbnailUrl()  // 이제 S3 key 그대로 반환
+                )).toList();
     }
 }
