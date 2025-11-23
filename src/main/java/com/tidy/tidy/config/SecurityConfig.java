@@ -48,7 +48,6 @@ public class SecurityConfig {
                 })
 
                 .oauth2Login(oauth -> oauth
-                        .loginPage("/oauth2/authorization/google")
                         .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
                         .defaultSuccessUrl("http://localhost:3000/", true)
                 )
