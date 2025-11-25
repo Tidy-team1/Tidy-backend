@@ -1,4 +1,4 @@
-package com.tidy.tidy.web;
+package com.tidy.tidy.api;
 
 import com.tidy.tidy.config.oauth.CustomOAuth2User;
 import com.tidy.tidy.domain.presentation.Presentation;
@@ -10,9 +10,9 @@ import com.tidy.tidy.domain.space.personal.PersonalSpace;
 import com.tidy.tidy.domain.space.personal.PersonalSpaceRepository;
 import com.tidy.tidy.domain.space.team.*;
 import com.tidy.tidy.domain.user.User;
-import com.tidy.tidy.web.dto.PresentationResponse;
-import com.tidy.tidy.web.dto.SpaceDetailResponse;
-import com.tidy.tidy.web.dto.SpaceResponse;
+import com.tidy.tidy.api.dto.PresentationResponse;
+import com.tidy.tidy.api.dto.SpaceDetailResponse;
+import com.tidy.tidy.api.dto.SpaceResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
