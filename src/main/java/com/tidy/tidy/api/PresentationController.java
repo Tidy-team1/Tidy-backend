@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/presentations")
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class PresentationController {
 
     private final SlideService slideService;
