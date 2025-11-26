@@ -1,5 +1,6 @@
 package com.tidy.tidy.infrastructure.python;
 
+import com.tidy.tidy.api.task.dto.CreateReviewTaskRequest;
 import com.tidy.tidy.infrastructure.python.dto.PptThumbnailRequest;
 import com.tidy.tidy.infrastructure.python.dto.PptThumbnailResponse;
 
@@ -8,6 +9,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -36,4 +41,29 @@ public class PythonApiClient {
 
         return response.getBody();
     }
+
+    /**
+     * 리뷰 분석 요청 (예시)
+     * 실제 요청/응답 스펙은 FastAPI에 맞게 수정하면 됨
+     */
+    public String requestReviewAnalysis(Long spaceId, Long presentationId, List<String> options) {
+
+        String url = pythonBaseUrl + "/analysis/review";
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("spaceId", spaceId);
+        body.put("presentationId", presentationId);
+        body.put("options", options);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
+
+        ResponseEntity<String> response =
+                pythonRestTemplate.exchange(url, HttpMethod.POST, entity, String.class);
+
+        return response.getBody();
+    }
+
 }

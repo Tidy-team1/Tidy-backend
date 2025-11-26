@@ -1,4 +1,4 @@
-package com.tidy.tidy.web;
+package com.tidy.tidy.api;
 
 import com.tidy.tidy.infrastructure.storage.S3StorageService;
 import lombok.RequiredArgsConstructor;

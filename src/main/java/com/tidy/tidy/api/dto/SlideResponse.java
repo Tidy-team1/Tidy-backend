@@ -1,4 +1,4 @@
-package com.tidy.tidy.web.dto;
+package com.tidy.tidy.api.dto;
 
 import com.tidy.tidy.domain.slide.Slide;
 import lombok.AllArgsConstructor;

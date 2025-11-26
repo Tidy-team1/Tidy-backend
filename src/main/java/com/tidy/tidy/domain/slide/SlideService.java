@@ -5,7 +5,7 @@ import com.tidy.tidy.domain.presentation.PresentationRepository;
 import com.tidy.tidy.infrastructure.python.PythonApiClient;
 import com.tidy.tidy.infrastructure.python.dto.PptThumbnailRequest;
 import com.tidy.tidy.infrastructure.python.dto.PptThumbnailResponse;
-import com.tidy.tidy.web.dto.SlideResponse;
+import com.tidy.tidy.api.dto.SlideResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

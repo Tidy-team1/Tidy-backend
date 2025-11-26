@@ -1,21 +1,17 @@
-package com.tidy.tidy.web;
+package com.tidy.tidy.api;
 
 import com.tidy.tidy.config.oauth.CustomOAuth2User;
 import com.tidy.tidy.domain.space.personal.PersonalSpace;
 import com.tidy.tidy.domain.space.personal.PersonalSpaceRepository;
 import com.tidy.tidy.domain.user.User;
-import com.tidy.tidy.web.dto.UserResponse;
-import jakarta.servlet.http.HttpServletRequest;
+import com.tidy.tidy.api.dto.UserResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/auth")

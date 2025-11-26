@@ -1,7 +1,6 @@
-package com.tidy.tidy.web.dto;
+package com.tidy.tidy.api.dto;
 
 import com.tidy.tidy.domain.space.personal.PersonalSpace;
-import com.tidy.tidy.domain.space.personal.PersonalSpaceRepository;
 import com.tidy.tidy.domain.user.User;
 import lombok.Builder;
 
