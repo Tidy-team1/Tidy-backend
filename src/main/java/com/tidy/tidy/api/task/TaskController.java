@@ -4,10 +4,11 @@ import com.tidy.tidy.api.task.dto.CreateReviewTaskRequest;
 import com.tidy.tidy.api.task.dto.TaskCreateResponse;
 import com.tidy.tidy.api.task.dto.TaskStatusResponse;
 import com.tidy.tidy.application.task.TaskService;
-import com.tidy.tidy.domain.task.TaskStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -31,11 +32,15 @@ public class TaskController {
      * Task 상태 조회 API
      * 예: GET /tasks/{taskId}
      */
-    @GetMapping("/tasks/{id}")
-    public ResponseEntity<TaskStatusResponse> getTaskStatus(
-            @PathVariable Long id
-    ) {
-        TaskStatus task = taskService.getTask(id);
-        return ResponseEntity.ok(new TaskStatusResponse(task));
+    // 작업 단건 조회
+    @GetMapping("/tasks/{taskId}")
+    public TaskStatusResponse getTask(@PathVariable Long taskId) {
+        return taskService.getTask(taskId);
+    }
+
+    // 특정 presentation에 연결된 작업 리스트 조회
+    @GetMapping("/tasks")
+    public List<TaskStatusResponse> getTasksByPresentation(@RequestParam Long presentationId) {
+        return taskService.getTasksByPresentation(presentationId);
     }
 }

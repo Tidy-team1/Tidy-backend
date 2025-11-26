@@ -1,6 +1,7 @@
 package com.tidy.tidy.application.task;
 
 import com.tidy.tidy.api.task.dto.CreateReviewTaskRequest;
+import com.tidy.tidy.api.task.dto.TaskStatusResponse;
 import com.tidy.tidy.domain.presentation.Presentation;
 import com.tidy.tidy.domain.presentation.PresentationRepository;
 import com.tidy.tidy.domain.task.TaskStatus;
@@ -9,6 +10,9 @@ import com.tidy.tidy.domain.task.TaskType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class TaskService {
@@ -41,9 +45,17 @@ public class TaskService {
         return task.getId();
     }
 
-    @Transactional(readOnly = true)
-    public TaskStatus getTask(Long id) {
-        return taskStatusRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Task not found"));
+    public TaskStatusResponse getTask(Long taskId) {
+        TaskStatus task = taskStatusRepository.findById(taskId)
+                .orElseThrow(() -> new IllegalArgumentException("Task not found: " + taskId));
+
+        return new TaskStatusResponse(task);
+    }
+
+    public List<TaskStatusResponse> getTasksByPresentation(Long presentationId) {
+        List<TaskStatus> tasks = taskStatusRepository.findByPresentationId(presentationId);
+        return tasks.stream()
+                .map(TaskStatusResponse::new)
+                .toList();
     }
 }
