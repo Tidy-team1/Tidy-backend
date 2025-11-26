@@ -1,5 +1,6 @@
 package com.tidy.tidy.domain.slide;
 
+import com.tidy.tidy.api.dto.SlideListResponse;
 import com.tidy.tidy.domain.presentation.Presentation;
 import com.tidy.tidy.domain.presentation.PresentationRepository;
 import com.tidy.tidy.infrastructure.python.PythonApiClient;
@@ -44,7 +45,7 @@ public class SlideService {
         slideRepository.deleteByPresentation(p);
 
         // 4) 새 슬라이드 저장
-        int index = 1;
+        int index = 0;
         for (String key : keys) {
             Slide sl = new Slide(index, key, p); // thumbnailUrl ← 이제 S3 key
             slideRepository.save(sl);
@@ -57,16 +58,19 @@ public class SlideService {
     }
 
     @Transactional(readOnly = true)
-    public List<SlideResponse> getSlides(Long presentationId) {
+    public SlideListResponse getSlides(Long presentationId) {
         Presentation p = presentationRepository.findById(presentationId)
                 .orElseThrow(() -> new IllegalArgumentException("Presentation not found"));
 
-        return slideRepository.findAllByPresentationOrderBySlideIndexAsc(p)
+        List<SlideResponse> slides = slideRepository.findAllByPresentationOrderBySlideIndexAsc(p)
                 .stream()
                 .map(s -> new SlideResponse(
                         s.getId(),
                         s.getSlideIndex(),
-                        s.getThumbnailUrl()  // 이제 S3 key 그대로 반환
-                )).toList();
+                        s.getThumbnailUrl()
+                ))
+                .toList();
+
+        return new SlideListResponse(slides.size(), slides);
     }
 }
