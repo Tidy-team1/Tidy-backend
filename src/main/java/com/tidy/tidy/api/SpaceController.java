@@ -27,6 +27,7 @@ import java.util.Map;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/spaces")
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class SpaceController {
 
     private final PersonalSpaceRepository personalSpaceRepository;
