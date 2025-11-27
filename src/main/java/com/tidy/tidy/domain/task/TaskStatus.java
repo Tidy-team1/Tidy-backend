@@ -57,4 +57,8 @@ public class TaskStatus {
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
+
+    public void updateStatus(String status) {
+        this.status = status;
+    }
 }

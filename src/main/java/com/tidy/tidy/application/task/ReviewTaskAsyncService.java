@@ -1,6 +1,5 @@
 package com.tidy.tidy.application.task;
 
-import com.tidy.tidy.api.task.dto.CreateReviewTaskRequest;
 import com.tidy.tidy.domain.task.TaskStatus;
 import com.tidy.tidy.domain.task.TaskStatusRepository;
 import com.tidy.tidy.infrastructure.python.PythonApiClient;

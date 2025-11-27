@@ -29,6 +29,14 @@ public class TaskController {
     }
 
     /**
+     * PPT 요소 파싱 및 저장 비동기 작업 생성 API
+     */
+    @PostMapping("/presentations/{presentationId}/parse")
+    public Long parsePresentation(@PathVariable Long presentationId) {
+        return taskService.createParseTask(presentationId);
+    }
+
+    /**
      * Task 상태 조회 API
      * 예: GET /tasks/{taskId}
      */

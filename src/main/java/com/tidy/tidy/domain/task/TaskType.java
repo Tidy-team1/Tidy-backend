@@ -5,6 +5,9 @@ public enum TaskType {
     // 리뷰 분석
     REVIEW_ANALYSIS,
 
+    // PPT 파싱
+    PARSE_PPT,
+
     // PPT 전체 -> PDF
     PPT_CONVERT,
 

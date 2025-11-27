@@ -20,7 +20,11 @@ public class TaskService {
     private final TaskStatusRepository taskStatusRepository;
     private final ReviewTaskAsyncService reviewTaskAsyncService;
     private final PresentationRepository presentationRepository; // ⭐ 중요
+    private final ParsingTaskAsyncService parsingTaskAsyncService;
 
+    // ============================================
+    // 1) 점검 Task 생성
+    // ============================================
     @Transactional
     public Long createReviewAnalysisTask(Long presentationId, CreateReviewTaskRequest req) {
         // 1) presId → spaceId 조회
@@ -41,6 +45,34 @@ public class TaskService {
 
         // 3) Async 로직에 options 포함하여 전달
         reviewTaskAsyncService.processReviewTask(task.getId(), spaceId, presentationId, req.getOptions());
+
+        return task.getId();
+    }
+
+    // ============================================
+    // 2) 파싱 Task 생성
+    // ============================================
+    @Transactional
+    public Long createParseTask(Long presentationId) {
+
+        Presentation pres = presentationRepository.findById(presentationId)
+                .orElseThrow(() -> new IllegalArgumentException("Presentation not found"));
+
+        Long spaceId = pres.getSpace().getId();
+
+        TaskStatus task = TaskStatus.builder()
+                .taskType(TaskType.PARSE_PPT)
+                .status("PENDING")
+                .presentationId(presentationId)
+                .build();
+
+        taskStatusRepository.save(task);
+
+        parsingTaskAsyncService.processParsingTask(
+                task.getId(),
+                spaceId,
+                presentationId
+        );
 
         return task.getId();
     }
