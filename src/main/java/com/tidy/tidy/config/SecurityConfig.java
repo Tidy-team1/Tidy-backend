@@ -10,6 +10,9 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
@@ -26,10 +29,10 @@ public class SecurityConfig {
 
         http
                 .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))  // ⭐ 추가된 부분
 
                 .authorizeHttpRequests(auth -> {
 
-                    // ⭐ dev 환경에서만 Swagger 접근 허용
                     if (isDev()) {
                         auth.requestMatchers(
                                 "/swagger-ui/**",
@@ -63,6 +66,22 @@ public class SecurityConfig {
                 .headers(headers -> headers.frameOptions(Customizer.withDefaults()).disable());
 
         return http.build();
+    }
+
+    // ⭐⭐ CORS 설정 핵심 — preflight(OPTIONS) 허용
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+
+        config.addAllowedOrigin("http://localhost:3000");
+        config.addAllowedHeader("*");
+        config.addAllowedMethod("*");
+        config.setAllowCredentials(true); // ⭐ Credentials 기반 OAuth 필수
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+
+        return source;
     }
 
     private boolean isDev() {

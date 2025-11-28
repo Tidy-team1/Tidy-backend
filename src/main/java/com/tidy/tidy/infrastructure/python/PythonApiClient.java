@@ -1,9 +1,11 @@
 package com.tidy.tidy.infrastructure.python;
 
 import com.tidy.tidy.api.task.dto.CreateReviewTaskRequest;
+import com.tidy.tidy.infrastructure.python.dto.ApplyFeedbackPayload;
 import com.tidy.tidy.infrastructure.python.dto.PptThumbnailRequest;
 import com.tidy.tidy.infrastructure.python.dto.PptThumbnailResponse;
 
+import com.tidy.tidy.infrastructure.python.dto.ReviewAnalysisResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -46,7 +48,7 @@ public class PythonApiClient {
      * 리뷰 분석 요청 (예시)
      * 실제 요청/응답 스펙은 FastAPI에 맞게 수정하면 됨
      */
-    public String requestReviewAnalysis(Long spaceId, Long presentationId, List<String> options) {
+    public ReviewAnalysisResult requestReviewAnalysis(Long spaceId, Long presentationId, List<String> options) {
 
         String url = pythonBaseUrl + "/analysis/review";
 
@@ -60,10 +62,12 @@ public class PythonApiClient {
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
 
-        ResponseEntity<String> response =
-                pythonRestTemplate.exchange(url, HttpMethod.POST, entity, String.class);
+        ResponseEntity<ReviewAnalysisResult> response =
+                pythonRestTemplate.exchange(url, HttpMethod.POST, entity, ReviewAnalysisResult.class);
 
         return response.getBody();
     }
 
+    public void applyFeedback(ApplyFeedbackPayload payload) {
+    }
 }
