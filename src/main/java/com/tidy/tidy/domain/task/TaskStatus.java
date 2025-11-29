@@ -1,11 +1,8 @@
 package com.tidy.tidy.domain.task;
 
+import com.tidy.tidy.domain.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -14,7 +11,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "task_status")
-public class TaskStatus {
+public class TaskStatus extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,12 +29,6 @@ public class TaskStatus {
     private String status;
 
     /**
-     * 결과 데이터 (JSON, 파일 키 등)
-     */
-    @Column(columnDefinition = "TEXT")
-    private String result;
-
-    /**
      * 어떤 PPT(Presentation)에 대한 작업인지
      */
     private Long presentationId;
@@ -45,16 +36,5 @@ public class TaskStatus {
     /**
      * 특정 슬라이드 작업일 경우 (Optional)
      */
-    private Integer slideIndex;
-
-    /**
-     * 특정 요소 작업일 경우 (Optional)
-     */
-    private Integer elementIndex;
-
-    @CreationTimestamp
-    private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    private LocalDateTime updatedAt;
+    private Long slideId;
 }

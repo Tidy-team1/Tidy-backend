@@ -59,7 +59,6 @@ public class ReviewTaskAsyncService {
         } catch (Exception e) {
             log.error("Review processing error", e);
             task.setStatus("ERROR");
-            task.setResult("ERROR: " + e.getMessage());
         }
     }
 

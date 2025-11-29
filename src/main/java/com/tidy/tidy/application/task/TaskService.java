@@ -33,8 +33,7 @@ public class TaskService {
                 .taskType(TaskType.REVIEW_ANALYSIS)
                 .status("PENDING")
                 .presentationId(presentationId)
-                .slideIndex(null)
-                .elementIndex(null)
+                .slideId(null)
                 .build();
 
         taskStatusRepository.save(task);
