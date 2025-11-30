@@ -329,7 +329,7 @@ public class SpaceController {
         // 4) 응답 생성
         Map<String, Object> response = Map.of(
                 "spaceId", teamSpace.getId(),
-                "members", savedMembers
+                "invitedMembers", savedMembers
         );
 
         return ResponseEntity.ok(response);
