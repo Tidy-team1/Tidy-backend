@@ -45,17 +45,17 @@ public class Feedback extends BaseTimeEntity {
     @Column(nullable = true)
     private Integer elementIndex;  // 파싱 순서 기반 식별자
 
-    @Column(nullable = true)
-    private Integer bboxLeft;
+    @Column
+    private double bboxLeft;
 
-    @Column(nullable = true)
-    private Integer bboxTop;
+    @Column
+    private double bboxTop;
 
-    @Column(nullable = true)
-    private Integer bboxWidth;
+    @Column
+    private double bboxWidth;
 
-    @Column(nullable = true)
-    private Integer bboxHeight;
+    @Column
+    private double bboxHeight;
 
     // -------- 상태(PENDING / APPLIED / IGNORED) --------
     @Enumerated(EnumType.STRING)

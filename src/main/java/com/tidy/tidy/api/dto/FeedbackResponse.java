@@ -16,10 +16,10 @@ public class FeedbackResponse {
     private final String status;
 
     // bbox
-    private final Integer bboxLeft;
-    private final Integer bboxTop;
-    private final Integer bboxWidth;
-    private final Integer bboxHeight;
+    private final double bboxLeft;
+    private final double bboxTop;
+    private final double bboxWidth;
+    private final double bboxHeight;
 
     private final Integer shapeId;
     private final Integer elementIndex;

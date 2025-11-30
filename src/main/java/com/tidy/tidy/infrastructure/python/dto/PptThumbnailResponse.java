@@ -6,5 +6,6 @@ import java.util.List;
 
 @Getter
 public class PptThumbnailResponse {
-    private List<String> thumbnailKeys;  // S3 key list
+    private List<String> thumbnailKeys;
+    private List<SlideSizeDto> slides;
 }
