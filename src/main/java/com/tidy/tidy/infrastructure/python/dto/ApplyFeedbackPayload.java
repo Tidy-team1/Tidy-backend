@@ -21,8 +21,8 @@ public class ApplyFeedbackPayload {
     private Integer elementIndex;
 
     // bbox (fallback & 디버깅용)
-    private Integer bboxLeft;
-    private Integer bboxTop;
-    private Integer bboxWidth;
-    private Integer bboxHeight;
+    private double bboxLeft;
+    private double bboxTop;
+    private double bboxWidth;
+    private double bboxHeight;
 }

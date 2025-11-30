@@ -7,6 +7,7 @@ import com.tidy.tidy.infrastructure.python.PythonApiClient;
 import com.tidy.tidy.infrastructure.python.dto.PptThumbnailRequest;
 import com.tidy.tidy.infrastructure.python.dto.PptThumbnailResponse;
 import com.tidy.tidy.api.dto.SlideResponse;
+import com.tidy.tidy.infrastructure.python.dto.SlideSizeDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +38,8 @@ public class SlideService {
                 pythonApiClient.requestThumbnailGeneration(presentationId, req);
 
         List<String> keys = response.getThumbnailKeys();
+        List<SlideSizeDto> sizes = response.getSlides();
+
         if (keys == null || keys.isEmpty()) {
             throw new IllegalStateException("Python returned no thumbnails");
         }
@@ -45,11 +48,19 @@ public class SlideService {
         slideRepository.deleteByPresentation(p);
 
         // 4) 새 슬라이드 저장
-        int index = 0;
-        for (String key : keys) {
-            Slide sl = new Slide(index, key, p); // thumbnailUrl ← 이제 S3 key
+        for (int i = 0; i < keys.size(); i++) {
+            String key = keys.get(i);
+            SlideSizeDto size = sizes.get(i);
+
+            Slide sl = new Slide(
+                    size.getIndex(),      // Python에서 넘겨준 index
+                    key,
+                    size.getWidth(),
+                    size.getHeight(),
+                    p
+            );
+
             slideRepository.save(sl);
-            index++;
         }
 
         // 5) 대표 썸네일 저장
@@ -67,6 +78,8 @@ public class SlideService {
                 .map(s -> new SlideResponse(
                         s.getId(),
                         s.getSlideIndex(),
+                        s.getWidth(),
+                        s.getHeight(),
                         s.getThumbnailUrl()
                 ))
                 .toList();

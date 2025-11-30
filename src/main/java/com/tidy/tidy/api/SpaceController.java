@@ -219,6 +219,7 @@ public class SpaceController {
         // 3) 응답
         return ResponseEntity.ok(new PresentationResponse(presentation));
     }
+
     // ---------------------------------------------
     // 8) TeamSpace 멤버 초대
     // ---------------------------------------------
