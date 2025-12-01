@@ -32,8 +32,6 @@ public class Presentation extends BaseTimeEntity {
     @Column(nullable = false)
     private AnalysisStatus analysisStatus; // PENDING, RUNNING, DONE, FAILED
 
-    private String analysisPath;  // Python 결과 JSON 경로 (선택적)
-
     // 핵심 포인트: Space 하나만 연결
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "space_id", nullable = false)
@@ -56,7 +54,7 @@ public class Presentation extends BaseTimeEntity {
         this.filePath = filePath;
         this.thumbnailUrl = thumbnailUrl;
         this.slideCount = slideCount;
-        this.analysisStatus = analysisStatus != null ? analysisStatus : AnalysisStatus.PENDING;
+        this.analysisStatus = analysisStatus != null ? analysisStatus : AnalysisStatus.IMPORTED;
         this.uploader = uploader;
         this.space = space;
     }
@@ -72,23 +70,13 @@ public class Presentation extends BaseTimeEntity {
                 .filePath(filePath)
                 .slideCount(slideCount)
                 .thumbnailUrl(thumbnailUrl)
-                .analysisStatus(AnalysisStatus.PENDING)
+                .analysisStatus(AnalysisStatus.IMPORTED)
                 .space(space)
                 .uploader(uploader)
                 .build();
     }
 
     //== 상태 변경 메서드 ==//
-    public void updateAnalysisInfo(Integer slideCount, String thumbnailUrl, String analysisPath) {
-        this.slideCount = slideCount;
-        this.thumbnailUrl = thumbnailUrl;
-        this.analysisPath = analysisPath;
-        this.analysisStatus = AnalysisStatus.DONE;
-    }
-
-    public void markAnalysisFailed() {
-        this.analysisStatus = AnalysisStatus.FAILED;
-    }
 
     public void updateSlideCount(int count) {
         this.slideCount = count;

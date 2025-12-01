@@ -42,7 +42,7 @@ public class PresentationService {
                 .filePath("PENDING")  // NOT NULL 회피용 임시값
                 .thumbnailUrl(null)
                 .slideCount(0)
-                .analysisStatus(AnalysisStatus.PENDING)
+                .analysisStatus(AnalysisStatus.IMPORTED)
                 .space(space)
                 .uploader(uploader)
                 .build();
