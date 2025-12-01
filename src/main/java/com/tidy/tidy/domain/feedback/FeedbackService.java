@@ -35,8 +35,8 @@ public class FeedbackService {
      * 특정 슬라이드 피드백 조회
      */
     @Transactional(readOnly = true)
-    public List<FeedbackResponse> getBySlide(Long slideId) {
-        return feedbackRepository.findBySlideId(slideId)
+    public List<FeedbackResponse> getBySlide(Integer slideIndex) {
+        return feedbackRepository.findBySlideIndex(slideIndex)
                 .stream()
                 .map(fb -> new FeedbackResponse(fb, om))
                 .toList();
