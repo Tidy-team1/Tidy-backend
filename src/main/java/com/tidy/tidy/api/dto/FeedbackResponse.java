@@ -10,6 +10,7 @@ public class FeedbackResponse {
 
     private final Long id;
     private final Long slideId;
+    private final Integer slideIndex;
     private final String type;
     private final String message;
     private final JsonNode details;
@@ -27,6 +28,7 @@ public class FeedbackResponse {
     public FeedbackResponse(Feedback f, ObjectMapper om) {
         this.id = f.getId();
         this.slideId = f.getSlide().getId();
+        this.slideIndex = f.getSlide().getSlideIndex();
         this.type = f.getType();
         this.message = f.getMessage();
         this.details = parseJson(om, f.getDetails());
