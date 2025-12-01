@@ -25,9 +25,9 @@ public class FeedbackController {
     /**
      * 2) 특정 슬라이드 피드백 조회
      */
-    @GetMapping("/{presentationId}/slides/{slideId}/feedbacks")
-    public List<FeedbackResponse> getBySlide(@PathVariable Long slideId) {
-        return feedbackService.getBySlide(slideId);
+    @GetMapping("/{presentationId}/slides/{slideIndex}/feedbacks")
+    public List<FeedbackResponse> getBySlide(@PathVariable Integer slideIndex) {
+        return feedbackService.getBySlide(slideIndex);
     }
 
     /**

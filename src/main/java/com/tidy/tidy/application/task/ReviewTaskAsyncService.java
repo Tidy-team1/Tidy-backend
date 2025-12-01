@@ -66,9 +66,11 @@ public class ReviewTaskAsyncService {
 
         for (SlideIssueResult slideRes : result.getResults()) {
 
+            Integer slideIndex = slideRes.getSlide();
+
             // Presentation + slideIndex로 slide 찾기
             Slide slide = slideRepository
-                    .findByPresentation_IdAndSlideIndex(presentationId, slideRes.getSlide())
+                    .findByPresentation_IdAndSlideIndex(presentationId, slideIndex)
                     .orElseThrow(() ->
                             new IllegalArgumentException("Slide not found for index " + slideRes.getSlide())
                     );
@@ -79,6 +81,7 @@ public class ReviewTaskAsyncService {
 
                 Feedback fb = Feedback.builder()
                         .slide(slide)
+                        .slideIndex(slideIndex)
                         .type(issue.getType())
                         .message(issue.getMessage())
                         .details(issue.getDetails().toString())

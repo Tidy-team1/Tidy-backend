@@ -23,6 +23,10 @@ public class Feedback extends BaseTimeEntity {
     @JoinColumn(name = "slide_id", nullable = false)
     private Slide slide;
 
+    // ---- 중복이 아니라 "캐싱" 용도로 저장 ----
+    @Column(nullable = false)
+    private Integer slideIndex;
+
     // -------- Feedback info --------
     @Column(nullable = false, length = 50)
     private String type;   // spelling, font_consistency, readability 등
