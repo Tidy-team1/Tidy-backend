@@ -32,6 +32,12 @@ public class Presentation extends BaseTimeEntity {
     @Column(nullable = false)
     private AnalysisStatus analysisStatus; // PENDING, RUNNING, DONE, FAILED
 
+    @Column(nullable = false)
+    private Integer currentVersion;   // 현재 표시 버전
+
+    @Column(nullable = false)
+    private Integer maxVersion;       // 지금까지 생성된 최대 버전
+
     // 핵심 포인트: Space 하나만 연결
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "space_id", nullable = false)
@@ -48,6 +54,8 @@ public class Presentation extends BaseTimeEntity {
                         String thumbnailUrl,
                         Integer slideCount,
                         AnalysisStatus analysisStatus,
+                        Integer currentVersion,
+                        Integer maxVersion,
                         User uploader,
                         Space space) {
         this.title = title;
@@ -55,29 +63,13 @@ public class Presentation extends BaseTimeEntity {
         this.thumbnailUrl = thumbnailUrl;
         this.slideCount = slideCount;
         this.analysisStatus = analysisStatus != null ? analysisStatus : AnalysisStatus.IMPORTED;
+        this.currentVersion = currentVersion;
+        this.maxVersion = maxVersion;
         this.uploader = uploader;
         this.space = space;
     }
 
-    public static Presentation create(String title,
-                                  String filePath,
-                                  int slideCount,
-                                  String thumbnailUrl,
-                                  Space space,
-                                  User uploader) {
-        return Presentation.builder()
-                .title(title)
-                .filePath(filePath)
-                .slideCount(slideCount)
-                .thumbnailUrl(thumbnailUrl)
-                .analysisStatus(AnalysisStatus.IMPORTED)
-                .space(space)
-                .uploader(uploader)
-                .build();
-    }
-
     //== 상태 변경 메서드 ==//
-
     public void updateSlideCount(int count) {
         this.slideCount = count;
     }
@@ -88,5 +80,19 @@ public class Presentation extends BaseTimeEntity {
 
     public void updateFilePath(String savedPath) {
         this.filePath = savedPath;
+    }
+
+    // --- 편의 메서드 ---
+    public void moveToVersion(int version) {
+        this.currentVersion = version;
+    }
+
+    public int getNextVersion() {
+        return this.maxVersion + 1;
+    }
+
+    public void updateToNewVersion(int newVersion) {
+        this.maxVersion = newVersion;
+        this.currentVersion = newVersion;
     }
 }

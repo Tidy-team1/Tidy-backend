@@ -43,46 +43,6 @@ public class FeedbackService {
     }
 
     /**
-     * 피드백 적용 처리 (Python에 수정 요청)
-     */
-    @Transactional
-    public void applyFeedback(Long feedbackId) {
-
-        Feedback fb = feedbackRepository.findById(feedbackId)
-                .orElseThrow(() -> new IllegalArgumentException("Feedback not found"));
-
-        // 이미 적용된 피드백일 경우 중복 적용 방지
-        if (fb.getStatus() == FeedbackStatus.APPLIED) {
-            return;
-        }
-
-        var slide = fb.getSlide();
-
-        // Python 요청용 payload 생성
-        ApplyFeedbackPayload payload = ApplyFeedbackPayload.builder()
-                .presentationId(slide.getPresentation().getId())
-                .slideIndex(slide.getSlideIndex())
-
-                .type(fb.getType())
-                .detailsJson(fb.getDetails())
-
-                .shapeId(fb.getShapeId())
-                .elementIndex(fb.getElementIndex())
-
-                .bboxLeft(fb.getBboxLeft())
-                .bboxTop(fb.getBboxTop())
-                .bboxWidth(fb.getBboxWidth())
-                .bboxHeight(fb.getBboxHeight())
-                .build();
-
-        // Python API 호출
-        pythonApiClient.applyFeedback(payload);
-
-        // 상태 업데이트
-        fb.updateStatus(FeedbackStatus.APPLIED);
-    }
-
-    /**
      * 피드백 무시 (상태만 변경)
      */
     @Transactional

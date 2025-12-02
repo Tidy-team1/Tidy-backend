@@ -41,6 +41,8 @@ public class PresentationService {
                 .title(originalFilename)
                 .filePath("PENDING")  // NOT NULL 회피용 임시값
                 .thumbnailUrl(null)
+                .currentVersion(0)
+                .maxVersion(0)
                 .slideCount(0)
                 .analysisStatus(AnalysisStatus.IMPORTED)
                 .space(space)
