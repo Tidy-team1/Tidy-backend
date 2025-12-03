@@ -95,4 +95,8 @@ public class Presentation extends BaseTimeEntity {
         this.maxVersion = newVersion;
         this.currentVersion = newVersion;
     }
+
+    public void updateCurrentVersion(int version) {
+        this.currentVersion = version;
+    }
 }

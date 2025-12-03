@@ -37,4 +37,9 @@ public class TaskStatus extends BaseTimeEntity {
      * 특정 슬라이드 작업일 경우 (Optional)
      */
     private Long slideId;
+
+    /**
+     * MODIFY에서 버전 표시하기 위해 추가한 필드
+     */
+    private Integer newVersion;
 }

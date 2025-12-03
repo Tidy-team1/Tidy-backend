@@ -1,8 +1,12 @@
 package com.tidy.tidy.domain.slide;
 
 import com.tidy.tidy.api.dto.SlideListResponse;
+import com.tidy.tidy.api.dto.VersionedSlideListResponse;
+import com.tidy.tidy.api.dto.VersionedSlideResponse;
 import com.tidy.tidy.domain.presentation.Presentation;
 import com.tidy.tidy.domain.presentation.PresentationRepository;
+import com.tidy.tidy.domain.presentation.version.PresentationRevision;
+import com.tidy.tidy.domain.presentation.version.PresentationRevisionRepository;
 import com.tidy.tidy.infrastructure.python.PythonApiClient;
 import com.tidy.tidy.infrastructure.python.dto.PptThumbnailRequest;
 import com.tidy.tidy.infrastructure.python.dto.PptThumbnailResponse;
@@ -12,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -21,6 +26,7 @@ public class SlideService {
     private final PresentationRepository presentationRepository;
     private final SlideRepository slideRepository;
     private final PythonApiClient pythonApiClient;
+    private final PresentationRevisionRepository revisionRepository;
 
     @Transactional
     public void generateThumbnails(Long presentationId) {
@@ -86,4 +92,31 @@ public class SlideService {
 
         return new SlideListResponse(slides.size(), slides);
     }
+
+    public VersionedSlideListResponse getSlidesByVersion(Long presentationId, int version) {
+
+        PresentationRevision rev = revisionRepository.findByPresentationIdAndVersion(presentationId, version)
+                .orElseThrow(() -> new IllegalArgumentException("Revision not found"));
+
+        int width = 1920;   // PPTX에서 width/height 읽어도 되고
+        int height = 1080;
+
+        List<VersionedSlideResponse> slides = new ArrayList<>();
+
+        for (int i = 0; i < rev.getSlideCount(); i++) {
+            slides.add(new VersionedSlideResponse(
+                    i,
+                    width,
+                    height,
+                    rev.getSlidePrefix() + i + ".png"
+            ));
+        }
+
+        return new VersionedSlideListResponse(
+                version,
+                rev.getSlideCount(),
+                slides
+        );
+    }
+
 }

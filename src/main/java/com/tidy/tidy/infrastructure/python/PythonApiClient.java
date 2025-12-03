@@ -1,6 +1,5 @@
 package com.tidy.tidy.infrastructure.python;
 
-import com.tidy.tidy.api.task.dto.CreateReviewTaskRequest;
 import com.tidy.tidy.infrastructure.python.dto.*;
 
 import lombok.RequiredArgsConstructor;
@@ -65,7 +64,7 @@ public class PythonApiClient {
         return response.getBody();
     }
 
-    public void applyFeedbackBatch(ApplyFeedbackBatchPayload payload) {
+    public ModifyResult applyFeedbackBatch(ApplyFeedbackBatchPayload payload) {
 
         String url = pythonBaseUrl + "/modify";
 
@@ -74,11 +73,13 @@ public class PythonApiClient {
 
         HttpEntity<ApplyFeedbackBatchPayload> entity = new HttpEntity<>(payload, headers);
 
-        pythonRestTemplate.exchange(
+        ResponseEntity<ModifyResult> res = pythonRestTemplate.exchange(
                 url,
                 HttpMethod.POST,
                 entity,
-                Void.class
+                ModifyResult.class
         );
+
+        return res.getBody();
     }
 }

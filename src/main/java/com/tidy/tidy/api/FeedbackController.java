@@ -2,8 +2,10 @@ package com.tidy.tidy.api;
 
 import com.tidy.tidy.api.dto.ApplyFeedbackRequest;
 import com.tidy.tidy.api.dto.FeedbackResponse;
+import com.tidy.tidy.api.dto.UndoResponse;
 import com.tidy.tidy.application.task.TaskService;
 import com.tidy.tidy.domain.feedback.FeedbackService;
+import com.tidy.tidy.domain.presentation.PresentationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +19,7 @@ import java.util.Map;
 public class FeedbackController {
 
     private final FeedbackService feedbackService;
+    private final PresentationService presentationService;
     private final TaskService taskService;
 
     /**
@@ -36,13 +39,8 @@ public class FeedbackController {
     }
 
     /**
-     * 4) 피드백 무시(선택)
+     * 3) 피드백 적용
      */
-    @PatchMapping("/feedbacks/{feedbackId}/ignore")
-    public void ignoreFeedback(@PathVariable Long feedbackId) {
-        feedbackService.ignoreFeedback(feedbackId);
-    }
-
     @PostMapping("/{presentationId}/apply")
     public ResponseEntity<?> apply(
             @PathVariable Long presentationId,
@@ -51,4 +49,16 @@ public class FeedbackController {
         Long taskId = taskService.createModifyTask(presentationId, req.getFeedbackIds());
         return ResponseEntity.ok(Map.of("taskId", taskId));
     }
+
+    /**
+     * 4) 되돌리기
+     */
+    @PostMapping("/{presentationId}/undo")
+    public ResponseEntity<?> undo(
+            @PathVariable Long presentationId
+    ) {
+        UndoResponse result = presentationService.undo(presentationId);
+        return ResponseEntity.ok(result);
+    }
+
 }

@@ -14,14 +14,12 @@ import com.tidy.tidy.domain.task.TaskType;
 import com.tidy.tidy.infrastructure.python.dto.ApplyFeedbackBatchPayload;
 import com.tidy.tidy.infrastructure.python.dto.ApplyFeedbackPayload;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
@@ -74,18 +72,18 @@ public class TaskService {
     @Transactional
     public Long createModifyTask(Long presentationId, List<Long> feedbackIds) {
 
-        // 1) Presentation 조회
         Presentation p = presentationRepository.findById(presentationId)
                 .orElseThrow(() -> new IllegalArgumentException("Presentation not found"));
 
         int baseVersion = p.getCurrentVersion();
         int targetVersion = p.getMaxVersion() + 1;
 
-        // 2) payload 준비
+        // --- Payload 생성 ---
         List<ApplyFeedbackPayload> items = feedbackIds.stream()
                 .map(id -> feedbackRepository.findById(id)
                         .orElseThrow(() -> new IllegalArgumentException("Feedback not found")))
                 .map(f -> ApplyFeedbackPayload.builder()
+                        .feedbackId(f.getId())                 // ⭐ 추가
                         .presentationId(p.getId())
                         .slideIndex(f.getSlideIndex())
                         .type(f.getType())
@@ -108,44 +106,22 @@ public class TaskService {
                 .items(items)
                 .build();
 
-        // 3) 버전 증가
+        // --- 버전 증가 (⭐ 여기에서만 version 증가) ---
         p.updateToNewVersion(targetVersion);
 
-        // 4) Revision 저장
-        PresentationRevision revision = PresentationRevision.builder()
-                .presentation(p)
-                .version(targetVersion)
-                .pptS3Key(String.format(
-                        "spaces/%d/presentations/%d/v%d/ppt/presentation.pptx",
-                        p.getSpace().getId(), p.getId(), targetVersion))
-                .slidePrefix(String.format(
-                        "spaces/%d/presentations/%d/v%d/slides/",
-                        p.getSpace().getId(), p.getId(), targetVersion))
-                .appliedFeedbackIds(new Gson().toJson(feedbackIds))
-                .build();
-
-        revisionRepository.save(revision);
-
-        // 5) Task 생성
+        // --- TaskStatus 생성 ---
         TaskStatus task = TaskStatus.builder()
                 .taskType(TaskType.MODIFY)
                 .status("PENDING")
                 .presentationId(p.getId())
-                .slideId(null)
+                .newVersion(targetVersion)
                 .build();
 
         taskStatusRepository.save(task);
 
-        // 6) 트랜잭션 끝난 다음 비동기 시작(단, afterCommit 필요 없음!)
-    /*
-      방법:
-      - 단순히 return 후 @Async 메서드 내부에서 taskId로 다시 조회해도 됨.
-      - 트랜잭션 내부에서는 Async 호출 하지 않는다.
-    */
-
         Long taskId = task.getId();
 
-        // 4) commit 이후에 async 실행
+        // --- commit 후 async 실행 ---
         TransactionSynchronizationManager.registerSynchronization(
                 new TransactionSynchronization() {
                     @Override

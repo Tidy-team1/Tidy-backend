@@ -13,4 +13,6 @@ public interface SlideRepository extends JpaRepository<Slide, Long> {
     List<Slide> findAllByPresentationOrderBySlideIndexAsc(Presentation presentation);
 
     Optional<Slide> findByPresentation_IdAndSlideIndex(Long presentationId, Integer slideIndex);
+
+    List<Slide> findByPresentation(Presentation p);
 }

@@ -7,6 +7,7 @@ import lombok.Getter;
 @Builder
 public class ApplyFeedbackPayload {
 
+    private Long feedbackId;
     private Long presentationId;
     private Integer slideIndex;
 

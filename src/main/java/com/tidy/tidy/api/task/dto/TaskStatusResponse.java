@@ -12,6 +12,7 @@ public class TaskStatusResponse {
     private final String status;
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
+    private final Integer newVersion;
 
     public TaskStatusResponse(TaskStatus entity) {
         this.id = entity.getId();
@@ -19,5 +20,6 @@ public class TaskStatusResponse {
         this.status = entity.getStatus();
         this.createdAt = entity.getCreatedAt();
         this.updatedAt = entity.getUpdatedAt();
+        this.newVersion = entity.getNewVersion();
     }
 }

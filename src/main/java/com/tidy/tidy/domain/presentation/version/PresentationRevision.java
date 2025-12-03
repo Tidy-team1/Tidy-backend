@@ -21,7 +21,12 @@ public class PresentationRevision extends BaseTimeEntity {
     private Presentation presentation;
 
     @Column(nullable = false)
-    private Integer version;
+    private Integer version;    // 적용 후 버전
+
+    @Column(nullable = false)
+    private Integer baseVersion;
+
+    private int slideCount;
 
     @Column(nullable = false)
     private String pptS3Key;
