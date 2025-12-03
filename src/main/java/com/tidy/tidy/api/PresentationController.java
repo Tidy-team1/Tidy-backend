@@ -1,6 +1,7 @@
 package com.tidy.tidy.api;
 
 import com.tidy.tidy.api.dto.SlideListResponse;
+import com.tidy.tidy.api.dto.VersionedSlideListResponse;
 import com.tidy.tidy.domain.slide.SlideService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,5 +21,14 @@ public class PresentationController {
 
         return ResponseEntity.ok(slideService.getSlides(presentationId));
     }
+
+    @GetMapping("/{presentationId}/versions/{version}/slides")
+    public ResponseEntity<VersionedSlideListResponse> getSlidesByVersion(
+            @PathVariable Long presentationId,
+            @PathVariable Integer version
+    ) {
+        return ResponseEntity.ok(slideService.getSlidesByVersion(presentationId, version));
+    }
+
 
 }

@@ -1,11 +1,7 @@
 package com.tidy.tidy.infrastructure.python;
 
-import com.tidy.tidy.api.task.dto.CreateReviewTaskRequest;
-import com.tidy.tidy.infrastructure.python.dto.ApplyFeedbackPayload;
-import com.tidy.tidy.infrastructure.python.dto.PptThumbnailRequest;
-import com.tidy.tidy.infrastructure.python.dto.PptThumbnailResponse;
+import com.tidy.tidy.infrastructure.python.dto.*;
 
-import com.tidy.tidy.infrastructure.python.dto.ReviewAnalysisResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -68,6 +64,22 @@ public class PythonApiClient {
         return response.getBody();
     }
 
-    public void applyFeedback(ApplyFeedbackPayload payload) {
+    public ModifyResult applyFeedbackBatch(ApplyFeedbackBatchPayload payload) {
+
+        String url = pythonBaseUrl + "/modify";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<ApplyFeedbackBatchPayload> entity = new HttpEntity<>(payload, headers);
+
+        ResponseEntity<ModifyResult> res = pythonRestTemplate.exchange(
+                url,
+                HttpMethod.POST,
+                entity,
+                ModifyResult.class
+        );
+
+        return res.getBody();
     }
 }

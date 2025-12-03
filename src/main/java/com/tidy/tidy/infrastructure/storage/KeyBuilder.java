@@ -10,7 +10,7 @@ public class KeyBuilder {
     private String baseDir;  // ex) "spaces"
 
     public String presentationOriginal(Long spaceId, Long presentationId) {
-        return String.format("%s/%d/presentations/%d/original/presentation.pptx",
+        return String.format("%s/%d/presentations/%d/v0/ppt/presentation.pptx",
                 baseDir, spaceId, presentationId);
     }
 
