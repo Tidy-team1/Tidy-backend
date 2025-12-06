@@ -1,9 +1,12 @@
 package com.tidy.tidy.domain.presentation.version;
 
 import com.tidy.tidy.domain.BaseTimeEntity;
+import com.tidy.tidy.domain.common.converter.LongListToJsonConverter;
 import com.tidy.tidy.domain.presentation.Presentation;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.List;
 
 @Entity
 @Getter
@@ -35,5 +38,7 @@ public class PresentationRevision extends BaseTimeEntity {
     private String slidePrefix; // ex) .../slides/
 
     @Column(nullable = true, length = 1000)
-    private String appliedFeedbackIds; // JSON 배열 문자열
+    @Convert(converter = LongListToJsonConverter.class)
+    private List<Long> appliedFeedbackIds;
+
 }
