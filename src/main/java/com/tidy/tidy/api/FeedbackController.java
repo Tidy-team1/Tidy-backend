@@ -2,9 +2,11 @@ package com.tidy.tidy.api;
 
 import com.tidy.tidy.api.dto.ApplyFeedbackRequest;
 import com.tidy.tidy.api.dto.FeedbackResponse;
+import com.tidy.tidy.api.dto.FeedbackStatusResponse;
 import com.tidy.tidy.api.dto.UndoResponse;
 import com.tidy.tidy.application.task.TaskService;
 import com.tidy.tidy.domain.feedback.FeedbackService;
+import com.tidy.tidy.domain.feedback.FeedbackStatusService;
 import com.tidy.tidy.domain.presentation.PresentationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +23,7 @@ public class FeedbackController {
     private final FeedbackService feedbackService;
     private final PresentationService presentationService;
     private final TaskService taskService;
+    private final FeedbackStatusService feedbackStatusService;
 
     /**
      * 1) 발표 전체 피드백 조회
@@ -61,4 +64,12 @@ public class FeedbackController {
         return ResponseEntity.ok(result);
     }
 
+    @GetMapping("/{presentationId}/feedback-status")
+    public ResponseEntity<FeedbackStatusResponse> getFeedbackStatus(
+            @PathVariable Long presentationId
+    ) {
+        return ResponseEntity.ok(
+                feedbackStatusService.getFeedbackStatus(presentationId)
+        );
+    }
 }

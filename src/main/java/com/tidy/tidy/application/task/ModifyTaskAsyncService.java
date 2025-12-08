@@ -48,11 +48,11 @@ public class ModifyTaskAsyncService {
                     .slideCount(result.getSlideCount())               // ⭐ slideCount 저장
                     .pptS3Key(result.getPptS3Key())
                     .slidePrefix(result.getSlidePrefix())
-                    .appliedFeedbackIds(new Gson().toJson(
+                    .appliedFeedbackIds(
                             payload.getItems().stream()
-                                    .map(ApplyFeedbackPayload::getFeedbackId)  // ← Feedback 엔티티 ID 필요!
+                                    .map(ApplyFeedbackPayload::getFeedbackId) // 이미 Long
                                     .toList()
-                    ))
+                    )
                     .build();
 
             revisionRepository.save(revision);
