@@ -2,6 +2,8 @@ package com.tidy.tidy.domain.presentation.version;
 
 import com.tidy.tidy.domain.presentation.Presentation;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 import java.util.Optional;
@@ -12,4 +14,8 @@ public interface PresentationRevisionRepository extends JpaRepository<Presentati
     Optional<PresentationRevision> findByPresentationIdAndVersion(Long presentationId, int v);
 
     List<PresentationRevision> findByPresentationOrderByVersionAsc(Presentation presentation);
+
+    @Modifying
+    @Query("delete from PresentationRevision r where r.presentation.id = :presentationId")
+    void deleteAllByPresentationId(Long presentationId);
 }

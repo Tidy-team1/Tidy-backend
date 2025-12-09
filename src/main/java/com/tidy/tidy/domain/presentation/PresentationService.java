@@ -3,12 +3,14 @@ package com.tidy.tidy.domain.presentation;
 import com.amazonaws.services.kms.model.NotFoundException;
 import com.tidy.tidy.api.dto.PresentationMetadataResponse;
 import com.tidy.tidy.api.dto.UndoResponse;
+import com.tidy.tidy.domain.feedback.FeedbackRepository;
 import com.tidy.tidy.domain.slide.Slide;
 import com.tidy.tidy.domain.slide.SlideRepository;
 import com.tidy.tidy.domain.space.Space;
 import com.tidy.tidy.domain.space.personal.PersonalSpace;
 import com.tidy.tidy.domain.space.personal.PersonalSpaceRepository;
 import com.tidy.tidy.domain.space.team.TeamSpaceRepository;
+import com.tidy.tidy.domain.task.TaskStatusRepository;
 import com.tidy.tidy.domain.user.User;
 import com.tidy.tidy.infrastructure.storage.KeyBuilder;
 import com.tidy.tidy.infrastructure.storage.StorageService;
@@ -37,6 +39,8 @@ public class PresentationService {
     private final StorageService storageService;
     private final KeyBuilder keyBuilder;
     private final SlideRepository slideRepository;
+    private final FeedbackRepository feedbackRepository;
+    private final TaskStatusRepository taskStatusRepository;
 
     @Transactional
     public Presentation savePresentation(Long spaceId, MultipartFile file, User uploader) throws IOException {
@@ -160,6 +164,9 @@ public class PresentationService {
         return String.format("%.1f %s", size / Math.pow(1024, exp), unit);
     }
 
+    /**
+     * 메타데이터 조회
+     */
     public PresentationMetadataResponse getMetadata(Long presentationId) {
         Presentation p = presentationRepository.findById(presentationId)
                 .orElseThrow(() -> new NotFoundException("Presentation not found"));
@@ -176,4 +183,32 @@ public class PresentationService {
                 .updatedAt(p.getUpdatedAt())
                 .build();
     }
+
+    @Transactional
+    public void deletePresentation(Long presentationId) {
+
+        Presentation p = presentationRepository.findById(presentationId)
+                .orElseThrow(() -> new NotFoundException("Presentation not found"));
+
+        // 1. Feedback 삭제
+        feedbackRepository.deleteAllByPresentationId(presentationId);
+
+        // 2. Slide 삭제
+        slideRepository.deleteAllByPresentationId(presentationId);
+
+        // 3. Revision 삭제
+        revisionRepository.deleteAllByPresentationId(presentationId);
+
+        // 4. TaskStatus 삭제
+        taskStatusRepository.deleteAllByPresentationId(presentationId);
+
+        // 5. S3 파일 삭제
+        storageService.delete(p.getFilePath());
+
+        // 6. Presentation 삭제
+        presentationRepository.delete(p);
+    }
+
+
+
 }

@@ -39,5 +39,9 @@ public class PresentationController {
         return presentationService.getMetadata(presentationId);
     }
 
+    @DeleteMapping("/{presentationId}")
+    public void deletePresentation(@PathVariable Long presentationId) {
+        presentationService.deletePresentation(presentationId);
+    }
 
 }
