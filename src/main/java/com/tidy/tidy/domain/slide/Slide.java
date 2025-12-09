@@ -5,10 +5,12 @@ import com.tidy.tidy.domain.presentation.Presentation;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Getter
 @NoArgsConstructor
+@Setter
 public class Slide extends BaseTimeEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,6 +26,10 @@ public class Slide extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "presentation_id")
     private Presentation presentation;
+
+    private Integer readabilityScore;
+    private Integer aestheticScore;
+    private Integer consistencyScore;
 
     public Slide(Integer slideIndex, String thumbnailUrl, double width, double height, Presentation presentation) {
         this.slideIndex = slideIndex;

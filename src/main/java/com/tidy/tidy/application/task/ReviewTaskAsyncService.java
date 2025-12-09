@@ -75,6 +75,23 @@ public class ReviewTaskAsyncService {
                             new IllegalArgumentException("Slide not found for index " + slideRes.getSlide())
                     );
 
+            Integer readability = slideRes.getReadability_score() != null
+                    ? (int) Math.round(slideRes.getReadability_score() * 100)
+                    : null;
+
+            Integer aesthetic = slideRes.getAesthetic_score() != null
+                    ? (int) Math.round(slideRes.getAesthetic_score() * 100)
+                    : null;
+
+            Integer consistency = slideRes.getConsistency_score() != null
+                    ? (int) Math.round(slideRes.getConsistency_score() * 100)
+                    : null;
+
+            slide.setReadabilityScore(readability);
+            slide.setAestheticScore(aesthetic);
+            slide.setConsistencyScore(consistency);
+
+
             for (IssueResult issue : slideRes.getIssues()) {
 
                 IssueElement el = issue.getElement();
