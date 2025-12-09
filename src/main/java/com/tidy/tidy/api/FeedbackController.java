@@ -1,9 +1,6 @@
 package com.tidy.tidy.api;
 
-import com.tidy.tidy.api.dto.ApplyFeedbackRequest;
-import com.tidy.tidy.api.dto.FeedbackResponse;
-import com.tidy.tidy.api.dto.FeedbackStatusResponse;
-import com.tidy.tidy.api.dto.UndoResponse;
+import com.tidy.tidy.api.dto.*;
 import com.tidy.tidy.application.task.TaskService;
 import com.tidy.tidy.domain.feedback.FeedbackService;
 import com.tidy.tidy.domain.feedback.FeedbackStatusService;
@@ -39,6 +36,14 @@ public class FeedbackController {
     @GetMapping("/{presentationId}/slides/{slideIndex}/feedbacks")
     public List<FeedbackResponse> getBySlide(@PathVariable Integer slideIndex) {
         return feedbackService.getBySlide(slideIndex);
+    }
+
+    /**
+     * 점수 조회 API
+     */
+    @GetMapping("/{presentationId}/scores")
+    public PresentationScoreResponse getScores(@PathVariable Long presentationId) {
+        return feedbackService.getScoresByPresentation(presentationId);
     }
 
     /**

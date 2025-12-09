@@ -2,13 +2,17 @@ package com.tidy.tidy.domain.feedback;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tidy.tidy.api.dto.FeedbackResponse;
+import com.tidy.tidy.api.dto.PresentationScoreResponse;
+import com.tidy.tidy.api.dto.SlideScoreResponse;
 import com.tidy.tidy.domain.slide.SlideRepository;
 import com.tidy.tidy.infrastructure.python.PythonApiClient;
 import com.tidy.tidy.infrastructure.python.dto.ApplyFeedbackPayload;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.tidy.tidy.domain.slide.Slide;
 
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -53,4 +57,27 @@ public class FeedbackService {
 
         fb.updateStatus(FeedbackStatus.IGNORED);
     }
+
+    /**
+     * 점수
+     */
+    @Transactional(readOnly = true)
+    public PresentationScoreResponse getScoresByPresentation(Long presentationId) {
+
+        List<Slide> slides = slideRepository.findByPresentation_Id(presentationId);
+
+        List<SlideScoreResponse> result = slides.stream()
+                .map(s -> new SlideScoreResponse(
+                        s.getId(),
+                        s.getSlideIndex(),
+                        s.getReadabilityScore(),
+                        s.getAestheticScore(),
+                        s.getConsistencyScore()
+                ))
+                .sorted(Comparator.comparing(SlideScoreResponse::getSlideIndex))
+                .toList();
+
+        return new PresentationScoreResponse(presentationId, result);
+    }
+
 }
