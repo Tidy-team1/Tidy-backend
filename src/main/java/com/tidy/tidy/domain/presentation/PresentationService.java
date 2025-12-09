@@ -1,5 +1,7 @@
 package com.tidy.tidy.domain.presentation;
 
+import com.amazonaws.services.kms.model.NotFoundException;
+import com.tidy.tidy.api.dto.PresentationMetadataResponse;
 import com.tidy.tidy.api.dto.UndoResponse;
 import com.tidy.tidy.domain.slide.Slide;
 import com.tidy.tidy.domain.slide.SlideRepository;
@@ -148,4 +150,30 @@ public class PresentationService {
         return new UndoResponse(0, keys);
     }
 
+    /**
+     * 메타데이터 용량 변환 헬퍼함수
+     */
+    private String toHumanReadable(long size) {
+        if (size < 1024) return size + " B";
+        int exp = (int) (Math.log(size) / Math.log(1024));
+        String unit = "KMGTPE".charAt(exp - 1) + "B";
+        return String.format("%.1f %s", size / Math.pow(1024, exp), unit);
+    }
+
+    public PresentationMetadataResponse getMetadata(Long presentationId) {
+        Presentation p = presentationRepository.findById(presentationId)
+                .orElseThrow(() -> new NotFoundException("Presentation not found"));
+
+        long fileSize = storageService.getFileSize(p.getFilePath()); // S3에서 메타데이터 HEAD 조회
+
+        return PresentationMetadataResponse.builder()
+                .id(p.getId())
+                .spaceId(p.getSpace().getId())
+                .title(p.getTitle())
+                .slideCount(p.getSlideCount())
+                .fileSize(toHumanReadable(fileSize))
+                .createdAt(p.getCreatedAt())
+                .updatedAt(p.getUpdatedAt())
+                .build();
+    }
 }

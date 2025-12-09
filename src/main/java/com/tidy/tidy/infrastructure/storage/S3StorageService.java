@@ -40,6 +40,12 @@ public class S3StorageService implements StorageService {
         amazonS3.deleteObject(bucket, key);
     }
 
+    @Override
+    public long getFileSize(String key) {
+        ObjectMetadata metadata = amazonS3.getObjectMetadata(bucket, key);
+        return metadata.getContentLength();
+    }
+
     /**
      * 주어진 key에 대한 presigned URL 생성 (GET용)
      */
