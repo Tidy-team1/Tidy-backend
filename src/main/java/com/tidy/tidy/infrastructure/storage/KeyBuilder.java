@@ -14,13 +14,15 @@ public class KeyBuilder {
                 baseDir, spaceId, presentationId);
     }
 
-    public String slideThumbnail(Long spaceId, Long presentationId, int index) {
-        return String.format("%s/%d/presentations/%d/thumbnails/slide-%d.png",
-                baseDir, spaceId, presentationId, index);
+    public static String versionedPptKey(Long spaceId, Long presentationId, Integer version) {
+        return String.format(
+                "spaces/%d/presentations/%d/v%d/ppt/presentation.pptx",
+                spaceId, presentationId, version
+        );
     }
 
-    public String aiResult(Long spaceId, Long presentationId) {
-        return String.format("%s/%d/presentations/%d/ai/result.json",
-                baseDir, spaceId, presentationId);
+    public String slideThumbnail(Long spaceId, Long presentationId, int index) {
+        return String.format("%s/%d/presentations/%d/thumbnails/%d.png",
+                baseDir, spaceId, presentationId, index);
     }
 }

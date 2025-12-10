@@ -6,4 +6,5 @@ public interface StorageService {
 
     // 🔥 새로 추가 (파일 크기 조회)
     long getFileSize(String key);
+    byte[] downloadFile(String key);
 }

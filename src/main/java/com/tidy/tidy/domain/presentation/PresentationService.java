@@ -52,9 +52,16 @@ public class PresentationService {
             throw new IllegalArgumentException("파일 이름이 비어 있습니다.");
         }
 
+        // 파일명만 추출
+        String baseName = originalFilename;
+        int dotIdx = originalFilename.lastIndexOf('.');
+        if (dotIdx > 0) {
+            baseName = originalFilename.substring(0, dotIdx);
+        }
+
         // 1) Presentation 메타데이터 먼저 저장해서 PK 생성
         Presentation pres = Presentation.builder()
-                .title(originalFilename)
+                .title(baseName)
                 .filePath("PENDING")  // NOT NULL 회피용 임시값
                 .thumbnailUrl(null)
                 .currentVersion(0)
@@ -209,6 +216,12 @@ public class PresentationService {
         presentationRepository.delete(p);
     }
 
-
+    @Transactional(readOnly = true)
+    public Presentation getById(Long presentationId) {
+        return presentationRepository.findById(presentationId)
+                .orElseThrow(() ->
+                        new IllegalArgumentException("해당 Presentation이 존재하지 않습니다. id=" + presentationId)
+                );
+    }
 
 }
