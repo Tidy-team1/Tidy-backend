@@ -5,6 +5,9 @@ import com.tidy.tidy.api.dto.FeedbackResponse;
 import com.tidy.tidy.api.dto.PresentationScoreResponse;
 import com.tidy.tidy.api.dto.SlideScoreResponse;
 import com.tidy.tidy.domain.slide.SlideRepository;
+import com.tidy.tidy.domain.task.TaskStatus;
+import com.tidy.tidy.domain.task.TaskStatusRepository;
+import com.tidy.tidy.domain.task.TaskType;
 import com.tidy.tidy.infrastructure.python.PythonApiClient;
 import com.tidy.tidy.infrastructure.python.dto.ApplyFeedbackPayload;
 import lombok.RequiredArgsConstructor;
@@ -23,16 +26,24 @@ public class FeedbackService {
     private final SlideRepository slideRepository;
     private final PythonApiClient pythonApiClient;
     private final ObjectMapper om;
+    private final TaskStatusRepository taskStatusRepository;
 
     /**
      * 발표 전체 피드백 조회
      */
     @Transactional(readOnly = true)
     public List<FeedbackResponse> getByPresentation(Long presentationId) {
-        return feedbackRepository.findBySlidePresentationId(presentationId)
+        TaskStatus latestReview = taskStatusRepository
+                .findTopByPresentationIdAndTaskTypeOrderByIdDesc(presentationId, TaskType.REVIEW_ANALYSIS)
+                .orElse(null);
+
+        if (latestReview == null) return List.of();
+
+        return feedbackRepository.findByTask(latestReview)
                 .stream()
                 .map(fb -> new FeedbackResponse(fb, om))
                 .toList();
+
     }
 
     /**
@@ -44,18 +55,6 @@ public class FeedbackService {
                 .stream()
                 .map(fb -> new FeedbackResponse(fb, om))
                 .toList();
-    }
-
-    /**
-     * 피드백 무시 (상태만 변경)
-     */
-    @Transactional
-    public void ignoreFeedback(Long feedbackId) {
-
-        Feedback fb = feedbackRepository.findById(feedbackId)
-                .orElseThrow(() -> new IllegalArgumentException("Feedback not found"));
-
-        fb.updateStatus(FeedbackStatus.IGNORED);
     }
 
     /**

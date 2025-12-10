@@ -44,13 +44,14 @@ public class PythonApiClient {
      * 리뷰 분석 요청 (예시)
      * 실제 요청/응답 스펙은 FastAPI에 맞게 수정하면 됨
      */
-    public ReviewAnalysisResult requestReviewAnalysis(Long spaceId, Long presentationId, List<String> options) {
+    public ReviewAnalysisResult requestReviewAnalysis(Long spaceId, Long presentationId, Integer version, List<String> options) {
 
         String url = pythonBaseUrl + "/analysis/review";
 
         Map<String, Object> body = new HashMap<>();
         body.put("spaceId", spaceId);
         body.put("presentationId", presentationId);
+        body.put("version", version);
         body.put("options", options);
 
         HttpHeaders headers = new HttpHeaders();

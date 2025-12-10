@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface TaskStatusRepository extends JpaRepository<TaskStatus, Long> {
 
@@ -16,4 +17,8 @@ public interface TaskStatusRepository extends JpaRepository<TaskStatus, Long> {
     @Query("delete from TaskStatus t where t.presentationId = :presentationId")
     void deleteAllByPresentationId(Long presentationId);
 
+    Optional<TaskStatus> findTopByPresentationIdAndTaskTypeOrderByIdDesc(
+            Long presentationId,
+            TaskType taskType
+    );
 }
