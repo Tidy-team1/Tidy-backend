@@ -19,5 +19,7 @@ public class CreateReviewTaskRequest {
     private Integer slideIndex;    // optional
     private Integer elementIndex;  // optional
 
+    private Integer version;
+
     private List<String> options;  // ⭐ 추가됨
 }

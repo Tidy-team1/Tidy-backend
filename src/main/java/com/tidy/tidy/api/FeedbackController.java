@@ -31,12 +31,12 @@ public class FeedbackController {
     }
 
     /**
-     * 2) 특정 슬라이드 피드백 조회
+     * 2) 특정 슬라이드 피드백 조회 -> 안 쓴대서 주석 처리
      */
-    @GetMapping("/{presentationId}/slides/{slideIndex}/feedbacks")
-    public List<FeedbackResponse> getBySlide(@PathVariable Integer slideIndex) {
-        return feedbackService.getBySlide(slideIndex);
-    }
+//    @GetMapping("/{presentationId}/slides/{slideIndex}/feedbacks")
+//    public List<FeedbackResponse> getBySlide(@PathVariable Integer slideIndex) {
+//        return feedbackService.getBySlide(slideIndex);
+//    }
 
     /**
      * 점수 조회 API

@@ -2,6 +2,7 @@ package com.tidy.tidy.domain.feedback;
 
 import com.tidy.tidy.domain.BaseTimeEntity;
 import com.tidy.tidy.domain.slide.Slide;
+import com.tidy.tidy.domain.task.TaskStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnTransformer;
@@ -26,6 +27,10 @@ public class Feedback extends BaseTimeEntity {
     // ---- 중복이 아니라 "캐싱" 용도로 저장 ----
     @Column(nullable = false)
     private Integer slideIndex;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "task_id", nullable = false)
+    private TaskStatus task;  // 리뷰 실행 세션
 
     // -------- Feedback info --------
     @Column(nullable = false, length = 50)

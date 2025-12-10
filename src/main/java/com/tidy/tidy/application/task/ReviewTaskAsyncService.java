@@ -16,6 +16,7 @@ import com.tidy.tidy.infrastructure.python.dto.SlideIssueResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.config.Task;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +38,7 @@ public class ReviewTaskAsyncService {
             Long taskId,
             Long spaceId,
             Long presentationId,
+            Integer version,
             List<String> options
     ) {
 
@@ -48,10 +50,10 @@ public class ReviewTaskAsyncService {
 
             // ⭐ 1) Python에서 점검 결과 받기
             ReviewAnalysisResult result =
-                    pythonClient.requestReviewAnalysis(spaceId, presentationId, options);
+                    pythonClient.requestReviewAnalysis(spaceId, presentationId, version, options);
 
             // ⭐ 2) DB에 Feedback 저장
-            saveFeedbacksFromResult(presentationId, result);
+            saveFeedbacksFromResult(task, presentationId, result);
 
             // ⭐ 3) TaskStatus 결과 처리
             task.setStatus("DONE");
@@ -62,7 +64,7 @@ public class ReviewTaskAsyncService {
         }
     }
 
-    private void saveFeedbacksFromResult(Long presentationId, ReviewAnalysisResult result) {
+    private void saveFeedbacksFromResult(TaskStatus task, Long presentationId, ReviewAnalysisResult result) {
 
         for (SlideIssueResult slideRes : result.getResults()) {
 
@@ -97,6 +99,7 @@ public class ReviewTaskAsyncService {
                 IssueElement el = issue.getElement();
 
                 Feedback fb = Feedback.builder()
+                        .task(task)        // ⭐ 추가
                         .slide(slide)
                         .slideIndex(slideIndex)
                         .type(issue.getType())

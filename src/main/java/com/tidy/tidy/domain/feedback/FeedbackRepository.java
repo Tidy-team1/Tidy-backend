@@ -1,12 +1,14 @@
 package com.tidy.tidy.domain.feedback;
 
 import com.tidy.tidy.domain.presentation.Presentation;
+import com.tidy.tidy.domain.task.TaskStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
 
@@ -32,4 +34,5 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
     """)
     void deleteAllByPresentationId(Long presentationId);
 
+    List<Feedback> findByTask(TaskStatus latestReview);
 }

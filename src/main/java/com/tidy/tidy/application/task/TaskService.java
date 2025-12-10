@@ -39,6 +39,8 @@ public class TaskService {
                 .orElseThrow(() -> new IllegalArgumentException("Presentation not found"));
         Long spaceId = pres.getSpace().getId();
 
+        Integer version = pres.getCurrentVersion();   // ⭐ 여기서 가져옴
+
         // 2) TaskStatus 생성
         TaskStatus task = TaskStatus.builder()
                 .taskType(TaskType.REVIEW_ANALYSIS)
@@ -50,7 +52,13 @@ public class TaskService {
         taskStatusRepository.save(task);
 
         // 3) Async 로직에 options 포함하여 전달
-        reviewTaskAsyncService.processReviewTask(task.getId(), spaceId, presentationId, req.getOptions());
+        reviewTaskAsyncService.processReviewTask(
+                task.getId(),
+                spaceId,
+                presentationId,
+                version,
+                req.getOptions()
+        );
 
         return task.getId();
     }
