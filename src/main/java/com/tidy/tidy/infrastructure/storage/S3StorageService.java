@@ -4,6 +4,8 @@ import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,6 +13,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.net.URL;
 import java.util.Date;
 
@@ -58,5 +61,16 @@ public class S3StorageService implements StorageService {
 
         URL url = amazonS3.generatePresignedUrl(request);
         return url.toString();
+    }
+
+    @Override
+    public byte[] downloadFile(String key) {
+        S3Object s3Object = amazonS3.getObject(bucket, key);
+
+        try (S3ObjectInputStream inputStream = s3Object.getObjectContent()) {
+            return inputStream.readAllBytes();
+        } catch (IOException e) {
+            throw new RuntimeException("S3 파일 다운로드 실패: " + key, e);
+        }
     }
 }
