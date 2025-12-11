@@ -11,6 +11,7 @@ import com.tidy.tidy.infrastructure.storage.StorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriUtils;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -60,22 +61,37 @@ public class PresentationController {
 
         Presentation pres = presentationService.getById(presentationId);
 
-        String downloadName = (filename != null && !filename.isBlank())
+        // 실제 파일명 (한글 포함)
+        String realFilename = (filename != null && !filename.isBlank())
                 ? filename
                 : pres.getTitle() + ".pptx";
 
+        // UTF-8 인코딩된 파일명
+        String encodedFilename = UriUtils.encode(realFilename, StandardCharsets.UTF_8);
+
+        // Tomcat-safe fallback 파일명 (ASCII-only)
+        String asciiFallback = "presentation.pptx";
+
+        // 최종 Content-Disposition 헤더
+        // filename="presentation.pptx"   → Tomcat-safe fallback
+        // filename*=UTF-8''encodedName   → 실제 파일명, 모든 브라우저 지원됨
+        String contentDisposition =
+                "attachment; filename=\"" + asciiFallback + "\"; " +
+                        "filename*=UTF-8''" + encodedFilename;
+
         // S3에서 파일 다운로드
         byte[] fileBytes = storageService.downloadFile(
-                versionedPptKey(pres.getSpace().getId(), pres.getId(), pres.getCurrentVersion())
+                versionedPptKey(
+                        pres.getSpace().getId(),
+                        pres.getId(),
+                        pres.getCurrentVersion()
+                )
         );
 
         HttpHeaders headers = new HttpHeaders();
+        headers.set(HttpHeaders.CONTENT_DISPOSITION, contentDisposition);
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
         headers.setContentLength(fileBytes.length);
-        headers.setContentDispositionFormData(
-                "attachment",
-                URLEncoder.encode(downloadName, StandardCharsets.UTF_8)
-        );
 
         return new ResponseEntity<>(fileBytes, headers, HttpStatus.OK);
     }
