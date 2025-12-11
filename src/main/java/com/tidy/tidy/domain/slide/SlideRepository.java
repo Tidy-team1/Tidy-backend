@@ -4,6 +4,7 @@ import com.tidy.tidy.domain.presentation.Presentation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,4 +24,7 @@ public interface SlideRepository extends JpaRepository<Slide, Long> {
     @Modifying
     @Query("delete from Slide s where s.presentation.id = :presentationId")
     void deleteAllByPresentationId(Long presentationId);
+
+    @Query("SELECT s.id FROM Slide s WHERE s.presentation.id = :presentationId")
+    List<Long> findIdsByPresentationId(@Param("presentationId") Long presentationId);
 }
