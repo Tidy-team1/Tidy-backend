@@ -13,7 +13,7 @@ public class FeedbackResponse {
     private final Integer slideIndex;
     private final String type;
     private final String message;
-    private final JsonNode details;
+    private final String details;
     private final String status;
 
     // bbox
@@ -31,7 +31,7 @@ public class FeedbackResponse {
         this.slideIndex = f.getSlide().getSlideIndex();
         this.type = f.getType();
         this.message = f.getMessage();
-        this.details = parseJson(om, f.getDetails());
+        this.details = f.getDetails();
         this.status = f.getStatus().name();
 
         this.bboxLeft = f.getBboxLeft();
