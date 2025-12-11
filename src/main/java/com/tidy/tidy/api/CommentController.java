@@ -13,12 +13,22 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/slides/{slideId}/comments")
+@RequestMapping
 public class CommentController {
 
     private final CommentService commentService;
 
-    @PostMapping
+    /**
+     * 🔵 프레젠테이션 전체 댓글 조회
+     */
+    @GetMapping("/presentations/{presentationId}/comments")
+    public List<CommentResponse> getCommentsOfPresentation(
+            @PathVariable Long presentationId
+    ) {
+        return commentService.getCommentsOfPresentation(presentationId);
+    }
+
+    @PostMapping("/slides/{slideId}/comments")
     public CommentResponse createComment(
             @PathVariable Long slideId,
             @AuthenticationPrincipal CustomOAuth2User user,
@@ -27,12 +37,12 @@ public class CommentController {
         return commentService.createComment(slideId, user.getId(), req);
     }
 
-    @GetMapping
+    @GetMapping("/slides/{slideId}/comments")
     public List<CommentResponse> getComments(@PathVariable Long slideId) {
         return commentService.getCommentsOfSlide(slideId);
     }
 
-    @PutMapping("/{commentId}")
+    @PutMapping("/slides/{slideId}/comments/{commentId}")
     public CommentResponse updateComment(
             @PathVariable Long commentId,
             @AuthenticationPrincipal CustomOAuth2User user,
@@ -43,7 +53,7 @@ public class CommentController {
     }
 
 
-    @DeleteMapping("/{commentId}")
+    @DeleteMapping("/slides/{slideId}/comments/{commentId}")
     public void deleteComment(
             @PathVariable Long commentId,
             @AuthenticationPrincipal CustomOAuth2User user) {
@@ -52,7 +62,7 @@ public class CommentController {
     }
 
     // 댓글에 피드백 연결
-    @PostMapping("/{commentId}/feedbacks/{feedbackId}")
+    @PostMapping("/slides/{slideId}/comments/{commentId}/feedbacks/{feedbackId}")
     public void addFeedbackToComment(
             @PathVariable Long commentId,
             @PathVariable Long feedbackId) {
@@ -61,7 +71,7 @@ public class CommentController {
     }
 
     // 댓글에서 피드백 제거
-    @DeleteMapping("/{commentId}/feedbacks/{feedbackId}")
+    @DeleteMapping("/slides/{slideId}/comments/{commentId}/feedbacks/{feedbackId}")
     public void removeFeedbackFromComment(
             @PathVariable Long commentId,
             @PathVariable Long feedbackId) {

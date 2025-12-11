@@ -7,4 +7,6 @@ import java.util.List;
 public interface CommentRepository extends JpaRepository<Comment, Long> {
 
     List<Comment> findAllBySlideId(Long slideId);
+
+    List<Comment> findAllBySlideIdIn(List<Long> slideIds);
 }
