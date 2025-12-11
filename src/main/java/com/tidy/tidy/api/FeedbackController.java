@@ -77,4 +77,10 @@ public class FeedbackController {
                 feedbackStatusService.getFeedbackStatus(presentationId)
         );
     }
+
+    @GetMapping("/{presentationId}/feedbacks/all")
+    public List<FeedbackResponse> getAllFeedbacks(@PathVariable Long presentationId) {
+        return feedbackService.getAllByPresentation(presentationId);
+    }
+
 }
