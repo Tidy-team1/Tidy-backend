@@ -40,7 +40,7 @@ public class Feedback extends BaseTimeEntity {
     private String message;
 
     // type별로 다른 세부 정보(JSON)
-    @Column(columnDefinition = "json", nullable = false)
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String details;
 
 //    @Column(nullable = true)
