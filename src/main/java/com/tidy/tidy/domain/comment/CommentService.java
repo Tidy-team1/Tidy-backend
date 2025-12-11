@@ -165,13 +165,11 @@ public class CommentService {
     @Transactional(readOnly = true)
     public List<CommentResponse> getCommentsOfPresentation(Long presentationId) {
 
-        // 1. 프레젠테이션 내부의 모든 슬라이드 ID 조회
         List<Long> slideIds = slideRepository.findIdsByPresentationId(presentationId);
-
         if (slideIds.isEmpty()) return List.of();
 
-        // 2. 슬라이드들에 속한 모든 댓글 조회
-        List<Comment> comments = commentRepository.findAllBySlideIdIn(slideIds);
+        List<Comment> comments =
+                commentRepository.findAllBySlideIdInOrderByCreatedAtAsc(slideIds);
 
         return comments.stream()
                 .map(this::toResponse)
