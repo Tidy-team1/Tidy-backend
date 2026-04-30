@@ -79,12 +79,4 @@ public class FeedbackService {
         return new PresentationScoreResponse(presentationId, result);
     }
 
-    @Transactional(readOnly = true)
-    public List<FeedbackResponse> getAllByPresentation(Long presentationId) {
-
-        return feedbackRepository.findByPresentationId(presentationId)
-                .stream()
-                .map(fb -> new FeedbackResponse(fb, om))
-                .toList();
-    }
 }
